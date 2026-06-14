@@ -12,9 +12,30 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
+
+# Patrones de API keys de los proveedores usados. Sirven como RED DE SEGURIDAD:
+# cualquier valor que coincida se enmascara antes de escribirse a disco, para que
+# una key no pueda filtrarse a un CSV/JSON via un mensaje de error.
+_SECRET_PATTERNS = [
+    re.compile(r"AIza[0-9A-Za-z_\-]{35}"),        # Google API key
+    re.compile(r"AQ\.[A-Za-z0-9_\-]{20,}"),       # Google AI Studio key (formato nuevo)
+    re.compile(r"gsk_[A-Za-z0-9]{20,}"),          # Groq
+    re.compile(r"sk_[A-Za-z0-9]{20,}"),           # ElevenLabs / OpenAI-style
+    re.compile(r"(?i)(key|token|api[_-]?key)=[^&\s\"]+"),  # parametros key=... en URLs
+]
+
+
+def redact(value):
+    """Enmascara cualquier API key detectada en una cadena."""
+    if not isinstance(value, str):
+        return value
+    for pat in _SECRET_PATTERNS:
+        value = pat.sub("***REDACTED***", value)
+    return value
 
 CSV_FIELDS = [
     "timestamp",      # ISO-8601 UTC
@@ -37,7 +58,7 @@ def append_row(csv_path: Path, row: dict) -> None:
     """Anexa una fila al CSV, escribiendo el encabezado si el archivo es nuevo."""
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     new_file = not csv_path.exists()
-    safe = {k: row.get(k, "") for k in CSV_FIELDS}
+    safe = {k: redact(row.get(k, "")) for k in CSV_FIELDS}
     with csv_path.open("a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         if new_file:
@@ -54,7 +75,7 @@ def dump_jsonl(jsonl_path: Path, record: dict) -> None:
     """Guarda el detalle completo (incluida la salida del modelo) en JSON Lines."""
     jsonl_path.parent.mkdir(parents=True, exist_ok=True)
     with jsonl_path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        f.write(redact(json.dumps(record, ensure_ascii=False)) + "\n")
 
 
 def now_iso() -> str:

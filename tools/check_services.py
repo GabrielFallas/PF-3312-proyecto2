@@ -41,7 +41,11 @@ def load_env() -> None:
 
 
 def http_get(url: str, headers: dict, timeout: int = 20):
-    req = urllib.request.Request(url, headers=headers, method="GET")
+    # UA de navegador: algunos proveedores (Groq/Cloudflare) bloquean el UA por
+    # defecto de urllib (error 1010).
+    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) benchmarking-ia/1.0"}
+    h.update(headers)
+    req = urllib.request.Request(url, headers=h, method="GET")
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.status, json.loads(r.read().decode("utf-8"))
 

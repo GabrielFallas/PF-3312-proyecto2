@@ -57,7 +57,12 @@ def audio_duration_s(path: Path) -> float:
 # --------------------------------------------------------------------------
 def stt_faster_whisper(audio: Path, spec: dict) -> str:
     from faster_whisper import WhisperModel
-    model = WhisperModel(spec["model"], device="auto", compute_type="int8")
+    # CPU por defecto (evita depender de cuBLAS/CUDA). Define FW_DEVICE=cuda en
+    # .env si tienes una GPU NVIDIA con las librerias instaladas.
+    import os as _os
+    device = _os.getenv("FW_DEVICE", "cpu")
+    compute = "float16" if device == "cuda" else "int8"
+    model = WhisperModel(spec["model"], device=device, compute_type=compute)
     segments, _ = model.transcribe(str(audio), language="es")
     return " ".join(seg.text.strip() for seg in segments)
 
@@ -118,7 +123,8 @@ def stt_wav2vec2(audio: Path, spec: dict) -> str:
 # --------------------------------------------------------------------------
 def stt_deepgram(audio: Path, spec: dict) -> str:
     url = f"https://api.deepgram.com/v1/listen?model={spec['model']}&language=es&smart_format=true"
-    headers = {"Authorization": f"Token {config.get_key(spec)}", "Content-Type": "audio/wav"}
+    headers = {"Authorization": f"Token {config.get_key(spec)}", "Content-Type": "audio/wav",
+               "User-Agent": config.HTTP_USER_AGENT}
     r = requests.post(url, headers=headers, data=audio.read_bytes(), timeout=300)
     r.raise_for_status()
     return r.json()["results"]["channels"][0]["alternatives"][0]["transcript"]
@@ -127,7 +133,7 @@ def stt_deepgram(audio: Path, spec: dict) -> str:
 def stt_openai_compat(audio: Path, spec: dict) -> str:
     """Endpoint /audio/transcriptions compatible con OpenAI (Groq, OpenAI)."""
     url = f"{spec['base_url']}/audio/transcriptions"
-    headers = {"Authorization": f"Bearer {config.get_key(spec)}"}
+    headers = {"Authorization": f"Bearer {config.get_key(spec)}", "User-Agent": config.HTTP_USER_AGENT}
     with audio.open("rb") as f:
         files = {"file": (audio.name, f, "audio/wav")}
         data = {"model": spec["model"], "language": "es", "response_format": "json"}
@@ -138,7 +144,7 @@ def stt_openai_compat(audio: Path, spec: dict) -> str:
 
 def stt_assemblyai(audio: Path, spec: dict) -> str:
     base, key = "https://api.assemblyai.com/v2", config.get_key(spec)
-    headers = {"authorization": key}
+    headers = {"authorization": key, "User-Agent": config.HTTP_USER_AGENT}
     up = requests.post(f"{base}/upload", headers=headers, data=audio.read_bytes(), timeout=300)
     up.raise_for_status()
     tr = requests.post(f"{base}/transcript", headers=headers,

@@ -66,20 +66,29 @@ CLOUD_N_RUNS = int(os.getenv("CLOUD_N_RUNS", str(N_RUNS)))
 # --- Endpoint de Ollama (LLMs locales) ---
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
+# User-Agent para las peticiones a la nube. Algunos proveedores (p.ej. Groq,
+# detras de Cloudflare) bloquean el User-Agent por defecto de las librerias HTTP
+# (error 1010). Enviar un UA de navegador evita ese bloqueo.
+HTTP_USER_AGENT = os.getenv(
+    "HTTP_USER_AGENT",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) benchmarking-ia/1.0",
+)
+
 
 # ==========================================================================
 #  CATALOGO DE LLMs  (balance: nube-alta-gama / nube-bajo-costo / local)
 # ==========================================================================
 LLM_SERVICES = {
-    # --- Nube, alta gama (Google AI Studio free tier; modelo moderno 2.5) ---
-    "Gemini-2.5-Pro": {
-        "kind": "cloud", "tier": "nube-alta-gama", "provider": "gemini",
-        "model": "gemini-2.5-pro", "key_env": "GEMINI_API_KEY",
-    },
-    # --- Nube, bajo costo / alta velocidad (Gemini Flash: moderno, rapido, free) ---
+    # --- Nube, alta gama (Gemini 2.5 Flash: modelo moderno de la familia flagship,
+    #     pero con free tier generoso. Se evita 2.5 Pro para no agotar la cuota). ---
     "Gemini-2.5-Flash": {
-        "kind": "cloud", "tier": "nube-bajo-costo", "provider": "gemini",
+        "kind": "cloud", "tier": "nube-alta-gama", "provider": "gemini",
         "model": "gemini-2.5-flash", "key_env": "GEMINI_API_KEY",
+    },
+    # --- Nube, bajo costo / alta velocidad (Gemini 2.5 Flash-Lite: el mas ligero) ---
+    "Gemini-2.5-Flash-Lite": {
+        "kind": "cloud", "tier": "nube-bajo-costo", "provider": "gemini",
+        "model": "gemini-2.5-flash-lite", "key_env": "GEMINI_API_KEY",
     },
     # --- Nube, bajo costo / alta velocidad (Groq LPU, OpenAI-compatible) ---
     # NOTA: ejecuta `python -m tools.check_services` para elegir un modelo vigente.
@@ -151,10 +160,11 @@ TTS_ENGINES = {
     # NOTA: Aura prioriza ingles; valido como punto de comparacion de latencia.
     "Deepgram-Aura-2": {
         "kind": "cloud", "tier": "nube-bajo-costo", "engine": "deepgram_tts",
-        "model": "aura-2-celeste-en", "key_env": "DEEPGRAM_API_KEY",
+        "model": "aura-2-agustina-es", "key_env": "DEEPGRAM_API_KEY",
     },
     # --- Locales (offline) ---
-    "piper": {"kind": "local", "tier": "local", "engine": "piper", "voice": os.getenv("PIPER_VOICE", "")},
+    "piper-es-ES-davefx": {"kind": "local", "tier": "local", "engine": "piper", "voice": os.getenv("PIPER_VOICE", "")},
+    "piper-es-MX-claude-high": {"kind": "local", "tier": "local", "engine": "piper", "voice": "models/piper/es_MX-claude-high.onnx"},
     "coqui-xtts-v2": {"kind": "local", "tier": "local", "engine": "coqui", "model": "tts_models/multilingual/multi-dataset/xtts_v2"},
     "kokoro": {"kind": "local", "tier": "local", "engine": "kokoro", "voice": "ef_dora"},
     "espeak-ng": {"kind": "local", "tier": "local", "engine": "espeak", "voice": "es"},

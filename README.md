@@ -147,10 +147,22 @@ python -m analysis.build_report_data    # consolidar
 | `data/audio/muestra_es.wav` | audio en español que **debe corresponder** a la transcripción de referencia |
 | `data/tts_text_es.txt` | texto a sintetizar en el benchmark de TTS |
 
-Generar el WAV de prueba a 16 kHz mono:
+Generar el WAV de prueba a 16 kHz mono (dos opciones):
 ```bash
+# A) Sintetizar la referencia con ElevenLabs (reproducible, sin ffmpeg):
+python -m tools.make_test_audio
+# B) Convertir un audio real propio:
 ffmpeg -i tu_audio.mp3 -ar 16000 -ac 1 data/audio/muestra_es.wav
 ```
+
+> **Resultados incluidos:** este repositorio ya trae una corrida completa real en
+> `results/*.csv`, las figuras en `report/figures/` y las tablas consolidadas en
+> `report/tablas_generadas.md`, ejecutadas sobre un equipo i7-13700KF + **RTX
+> 5070 Ti** (LLM locales en GPU) descrito en el reporte. Para reproducir desde
+> cero, borra `results/` y vuelve a correr los pasos anteriores.
+
+> **GPU automática:** `docker-compose.yml` ya habilita la GPU NVIDIA para Ollama
+> (bloque `deploy`). Si tu equipo no tiene GPU, coméntalo y correrá en CPU.
 
 ---
 

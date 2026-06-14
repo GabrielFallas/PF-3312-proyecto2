@@ -1,0 +1,32 @@
+timestamp,category,service,test_case,run_idx,warmup,total_s,ttft_s,metric_name,metric_value,ok,error,notes
+2026-06-14T22:02:46+00:00,STT,Deepgram-nova-2,muestra_es,1,True,1.651523,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.091
+2026-06-14T22:02:51+00:00,STT,Deepgram-nova-2,muestra_es,2,False,1.783349,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.098
+2026-06-14T22:02:55+00:00,STT,Deepgram-nova-2,muestra_es,3,False,1.724647,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.095
+2026-06-14T22:03:00+00:00,STT,Deepgram-nova-2,muestra_es,4,False,1.515823,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.083
+2026-06-14T22:03:04+00:00,STT,Deepgram-nova-2,muestra_es,5,False,1.251288,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.069
+2026-06-14T22:03:08+00:00,STT,Deepgram-nova-2,muestra_es,6,False,1.224347,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.067
+2026-06-14T22:03:17+00:00,STT,AssemblyAI-best,muestra_es,1,True,5.118904,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.282
+2026-06-14T22:03:25+00:00,STT,AssemblyAI-best,muestra_es,2,False,5.468013,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.301
+2026-06-14T22:03:33+00:00,STT,AssemblyAI-best,muestra_es,3,False,5.3272,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.293
+2026-06-14T22:03:42+00:00,STT,AssemblyAI-best,muestra_es,4,False,5.843492,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.322
+2026-06-14T22:03:51+00:00,STT,AssemblyAI-best,muestra_es,5,False,5.96718,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.329
+2026-06-14T22:04:00+00:00,STT,AssemblyAI-best,muestra_es,6,False,5.876109,,wer,0.0,True,,tier=nube-alta-gama; rtf=0.324
+2026-06-14T22:04:05+00:00,STT,Groq-Whisper-large-v3,muestra_es,1,True,2.459664,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.135
+2026-06-14T22:04:11+00:00,STT,Groq-Whisper-large-v3,muestra_es,2,False,2.336779,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.129
+2026-06-14T22:04:16+00:00,STT,Groq-Whisper-large-v3,muestra_es,3,False,2.219886,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.122
+2026-06-14T22:04:22+00:00,STT,Groq-Whisper-large-v3,muestra_es,4,False,3.302735,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.182
+2026-06-14T22:04:28+00:00,STT,Groq-Whisper-large-v3,muestra_es,5,False,2.404519,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.132
+2026-06-14T22:04:33+00:00,STT,Groq-Whisper-large-v3,muestra_es,6,False,2.142641,,wer,0.0,True,,tier=nube-bajo-costo; rtf=0.118
+2026-06-14T22:07:06+00:00,STT,faster-whisper-base,muestra_es,1,True,0.0,,,,False,Library cublas64_12.dll is not found or cannot be loaded,tier=local
+2026-06-14T22:07:07+00:00,STT,vosk-es-small,muestra_es,1,True,0.937211,,wer,0.0,True,,tier=local; rtf=0.052
+2026-06-14T22:07:08+00:00,STT,vosk-es-small,muestra_es,2,False,0.956416,,wer,0.0,True,,tier=local; rtf=0.053
+2026-06-14T22:07:09+00:00,STT,vosk-es-small,muestra_es,3,False,0.988691,,wer,0.0,True,,tier=local; rtf=0.054
+2026-06-14T22:07:10+00:00,STT,vosk-es-small,muestra_es,4,False,0.95683,,wer,0.0,True,,tier=local; rtf=0.053
+2026-06-14T22:07:11+00:00,STT,vosk-es-small,muestra_es,5,False,0.940245,,wer,0.0,True,,tier=local; rtf=0.052
+2026-06-14T22:07:12+00:00,STT,vosk-es-small,muestra_es,6,False,0.937255,,wer,0.0,True,,tier=local; rtf=0.052
+2026-06-14T22:08:00+00:00,STT,faster-whisper-base,muestra_es,1,True,1.525981,,wer,0.0,True,,tier=local; rtf=0.084
+2026-06-14T22:08:01+00:00,STT,faster-whisper-base,muestra_es,2,False,0.916863,,wer,0.0,True,,tier=local; rtf=0.05
+2026-06-14T22:08:02+00:00,STT,faster-whisper-base,muestra_es,3,False,0.957685,,wer,0.0,True,,tier=local; rtf=0.053
+2026-06-14T22:08:03+00:00,STT,faster-whisper-base,muestra_es,4,False,0.88859,,wer,0.0,True,,tier=local; rtf=0.049
+2026-06-14T22:08:04+00:00,STT,faster-whisper-base,muestra_es,5,False,0.915236,,wer,0.0,True,,tier=local; rtf=0.05
+2026-06-14T22:08:05+00:00,STT,faster-whisper-base,muestra_es,6,False,0.8529,,wer,0.0,True,,tier=local; rtf=0.047

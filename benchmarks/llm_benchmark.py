@@ -77,7 +77,8 @@ def run_ollama(svc: dict, system: str, prompt: str, max_tokens: int):
 def run_openai_compat(svc: dict, system: str, prompt: str, max_tokens: int):
     """Cubre cualquier API compatible con OpenAI (Groq, OpenAI, OpenRouter, ...)."""
     timer = StreamTimer()
-    headers = {"Authorization": f"Bearer {config.get_key(svc)}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {config.get_key(svc)}", "Content-Type": "application/json",
+               "User-Agent": config.HTTP_USER_AGENT}
     payload = {
         "model": svc["model"],
         "messages": [{"role": "system", "content": system},
@@ -117,8 +118,11 @@ def run_openai_compat(svc: dict, system: str, prompt: str, max_tokens: int):
 def run_gemini(svc: dict, system: str, prompt: str, max_tokens: int):
     """Google Gemini via REST streamGenerateContent (SSE)."""
     timer = StreamTimer()
+    # La API key se envia por HEADER (x-goog-api-key), nunca en la URL, para que
+    # no pueda filtrarse a logs ni a mensajes de error/CSV.
     url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
-           f"{svc['model']}:streamGenerateContent?alt=sse&key={config.get_key(svc)}")
+           f"{svc['model']}:streamGenerateContent?alt=sse")
+    headers = {"User-Agent": config.HTTP_USER_AGENT, "x-goog-api-key": config.get_key(svc)}
     payload = {
         "systemInstruction": {"parts": [{"text": system}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
@@ -127,7 +131,8 @@ def run_gemini(svc: dict, system: str, prompt: str, max_tokens: int):
     pieces, tokens = [], 0
     timer.start()
     try:
-        with requests.post(url, json=payload, stream=True, timeout=300) as r:
+        with requests.post(url, json=payload, stream=True, timeout=300,
+                           headers=headers) as r:
             r.raise_for_status()
             for line in r.iter_lines(decode_unicode=True):
                 if not line or not line.startswith("data:"):

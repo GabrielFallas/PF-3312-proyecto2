@@ -41,10 +41,18 @@ RESULTS_CSV = config.RESULTS_DIR / "tts_results.csv"
 
 
 def audio_duration_s(path: Path) -> float:
-    """Duracion en segundos. WAV via modulo `wave`; otros formatos via librosa."""
+    """Duracion en segundos de un WAV PCM.
+
+    Calcula la duracion a partir del TAMANO REAL del archivo (no del campo de
+    tamano del header), porque algunos proveedores (p.ej. Deepgram) devuelven
+    WAV de streaming con un tamano de datos placeholder que inflaria la duracion.
+    """
     try:
         with wave.open(str(path), "rb") as wf:
-            return wf.getnframes() / float(wf.getframerate())
+            rate, ch, width = wf.getframerate(), wf.getnchannels(), wf.getsampwidth()
+        data_bytes = max(0, path.stat().st_size - 44)   # header WAV PCM = 44 bytes
+        frames = data_bytes // (ch * width)
+        return frames / float(rate) if rate else 0.0
     except Exception:
         try:
             import librosa
@@ -108,13 +116,19 @@ def tts_bark(text: str, out: Path, spec: dict) -> Path:
 #  Adaptadores en la nube (REST). Se activan solo con API key en .env.
 # --------------------------------------------------------------------------
 def tts_elevenlabs(text: str, out: Path, spec: dict) -> Path:
-    out = out.with_suffix(".mp3")
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{spec['voice']}?output_format=mp3_44100_128"
-    headers = {"xi-api-key": config.get_key(spec), "Content-Type": "application/json"}
+    # Se pide PCM 22.05 kHz y se envuelve en WAV para poder medir duracion/RTF
+    # con el modulo `wave` (sin depender de ffmpeg/librosa).
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{spec['voice']}?output_format=pcm_22050"
+    headers = {"xi-api-key": config.get_key(spec), "Content-Type": "application/json",
+               "User-Agent": config.HTTP_USER_AGENT}
     payload = {"text": text, "model_id": spec["model"]}
     r = requests.post(url, headers=headers, json=payload, timeout=300)
     r.raise_for_status()
-    out.write_bytes(r.content)
+    with wave.open(str(out), "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(22050)
+        wf.writeframes(r.content)
     return out
 
 
@@ -122,7 +136,8 @@ def tts_deepgram(text: str, out: Path, spec: dict) -> Path:
     """Deepgram Aura TTS (REST). Devuelve WAV PCM 24 kHz."""
     url = (f"https://api.deepgram.com/v1/speak?model={spec['model']}"
            f"&encoding=linear16&container=wav&sample_rate=24000")
-    headers = {"Authorization": f"Token {config.get_key(spec)}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Token {config.get_key(spec)}", "Content-Type": "application/json",
+               "User-Agent": config.HTTP_USER_AGENT}
     r = requests.post(url, headers=headers, json={"text": text}, timeout=300)
     r.raise_for_status()
     out.write_bytes(r.content)
