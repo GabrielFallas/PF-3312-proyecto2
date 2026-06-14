@@ -17,14 +17,20 @@ en la popularidad comercial de una API ni en el tamaño nominal de un modelo:
 requiere **evidencia empírica** recolectada bajo condiciones controladas.
 
 Este reporte documenta el diseño, la ejecución y el análisis de un banco de
-pruebas (*benchmarking*) sobre **quince servicios de código abierto y ejecución
-estrictamente local (offline)**, distribuidos en tres categorías que componen
-el *pipeline* de comunicación del agente: modelos de lenguaje (LLM),
-reconocimiento de voz (STT) y síntesis de voz (TTS). La decisión de restringir
-el estudio a soluciones locales responde a dos objetivos del proyecto: garantizar
-**soberanía total de los datos** (presupuesto cero en APIs y privacidad máxima)
-y producir un banco de pruebas **reproducible** en una máquina limpia mediante
-contenedores Docker.
+pruebas (*benchmarking*) sobre **al menos quince servicios** distribuidos en
+tres categorías que componen el *pipeline* de comunicación del agente: modelos
+de lenguaje (LLM), reconocimiento de voz (STT) y síntesis de voz (TTS). La
+muestra mantiene un **balance representativo** de los tres tipos que exige el
+enunciado: servicios **comerciales de alta gama en la nube** (p.ej. Gemini,
+Deepgram, ElevenLabs), **APIs comerciales de bajo costo o alta velocidad**
+(p.ej. Groq, OpenAI tts-1) y **modelos de código abierto de ejecución local
+(offline)** (Ollama, Whisper local, Piper, etc.).
+
+Para no incurrir en costos, los servicios en la nube se consumen a través de sus
+**capas gratuitas (free tier)**. Esta combinación permite contrastar de forma
+empírica los compromisos entre **desempeño en la nube** y **soberanía de datos
+local**, dos extremos relevantes para un agente institucional. Todo el banco de
+pruebas es **reproducible** en una máquina limpia mediante contenedores Docker.
 
 ## Objetivos específicos
 
@@ -33,8 +39,10 @@ contenedores Docker.
    promediando al menos cinco ejecuciones limpias.
 2. Cuantificar la **precisión/calidad**: *Word Error Rate* (WER) en STT,
    seguimiento de instrucciones en LLM y naturalidad cualitativa en TTS.
-3. Analizar **costo y escalabilidad** en términos de infraestructura local
-   (VRAM, RAM, consumo) al no existir costo por token o por minuto.
+3. Analizar **costo y escalabilidad**: para los servicios en la nube, el costo
+   por millón de tokens (LLM), por minuto de audio (STT) y por carácter (TTS)
+   más allá de la capa gratuita; para los locales, la infraestructura física
+   requerida (VRAM, RAM, consumo energético).
 4. Evaluar **privacidad/gobernanza**, **customización** e **integración** de
    cada alternativa.
 5. Proponer **combinaciones arquitectónicas óptimas** para distintos escenarios
@@ -68,15 +76,25 @@ permite reconstruir el experimento con tres comandos (ver `README.md`).
 
 ## Servicios evaluados
 
-| Categoría | Servicios (5 por categoría) | Tipo |
-|-----------|------------------------------|------|
-| **LLM** | Llama 3.1 8B, Mistral 7B, Phi-3.5, Gemma 2 9B, Qwen 2.5 7B | Open-weights vía Ollama |
-| **STT** | faster-whisper, openai-whisper, whisper.cpp, Vosk, wav2vec2 | Open-source local |
-| **TTS** | Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark | Open-source local |
+La muestra cumple el **balance representativo** exigido por el enunciado,
+combinando los tres tipos en cada categoría. Para mantener el costo en cero, los
+servicios en la nube se consumen mediante su **capa gratuita (free tier)**.
 
-La muestra incluye el balance exigido: modelos de mayor capacidad (Gemma 2 9B,
-XTTS v2, Whisper), opciones optimizadas para velocidad/bajo recurso (Phi-3.5,
-Vosk, Piper, eSpeak-NG) y, por definición, despliegue 100 % offline.
+| Categoría | Nube — alta gama | Nube — bajo costo/rápido | Local — offline |
+|-----------|------------------|--------------------------|-----------------|
+| **LLM** | Gemini 1.5 Pro; GPT-4o* | Groq Llama 3.3 70B | Llama 3.1 8B, Mistral 7B, Phi-3.5, Gemma 2 9B, Qwen 2.5 7B |
+| **STT** | Deepgram nova-2; AssemblyAI | Groq Whisper large-v3 | faster-whisper, openai-whisper, whisper.cpp, Vosk, wav2vec2 |
+| **TTS** | ElevenLabs (mult. v2); Azure TTS | OpenAI tts-1 | Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark |
+
+<sup>*GPT-4o requiere saldo; opcional. Cada servicio en la nube se activa solo si
+su API key está configurada en `.env`.</sup>
+
+Así, cada categoría supera el mínimo de 5 servicios e incluye: capacidad de alta
+gama en la nube (Gemini, Deepgram, ElevenLabs), opciones de bajo costo/alta
+velocidad (Groq, OpenAI tts-1) y despliegue 100 % offline (Ollama, Whisper
+local, Piper, etc.). Los datos sensibles solo salen de la máquina en los
+servicios en la nube; las alternativas locales garantizan aislamiento absoluto
+(ver dimensión de privacidad).
 
 ## Insumos de prueba controlados
 
@@ -117,16 +135,18 @@ Vosk, Piper, eSpeak-NG) y, por definición, despliegue 100 % offline.
 
 ## 3.1 Modelos de Lenguaje (LLM)
 
-### Matriz comparativa (5 modelos × 6 dimensiones)
+### Matriz comparativa (servicios × 6 dimensiones)
 
-| Dimensión | Llama 3.1 8B | Mistral 7B | Phi-3.5 | Gemma 2 9B | Qwen 2.5 7B |
-|-----------|--------------|-----------|---------|------------|-------------|
-| **1. Latencia** (TTFT / total) | ‹med›/‹med› | ‹med› | ‹med› | ‹med› | ‹med› |
-| **2. Calidad** (instrucciones/JSON) | Alta | Alta | Media-alta | Muy alta | Alta (fuerte en multilingüe/código) |
-| **3. Costo/escala** | $0 API · ~5–6 GB VRAM (Q4) | $0 · ~4–5 GB | $0 · ~2–3 GB (más ligero) | $0 · ~6–7 GB | $0 · ~5–6 GB |
-| **4. Privacidad** | Total (offline) | Total | Total | Total | Total |
-| **5. Customización** | System prompt, fine-tuning, GGUF | Íd. | Íd. | Íd. | Íd. (buen soporte de herramientas) |
-| **6. Integración** | API Ollama REST/streaming | Íd. | Íd. | Íd. | Íd. |
+| Servicio (tipo) | 1. Latencia (TTFT/total) | 2. Calidad | 3. Costo/escala | 4. Privacidad | 5. Customización | 6. Integración |
+|-----------------|--------------------------|-----------|-----------------|---------------|------------------|----------------|
+| **Gemini 1.5 Pro** 🟣 nube | ‹med›/‹med› | Muy alta (razonamiento, contexto largo) | Free tier; luego $/1M tokens | Datos salen a Google; opt-out según plan | System instruction, tools, JSON mode | REST/SSE, SDK oficial |
+| **GPT-4o** 🟣 nube | ‹med› | Muy alta | De pago $/1M tokens | Política OpenAI (no entrena con API por defecto) | System prompt, function calling | REST/SSE, OpenAI-compatible |
+| **Groq Llama 3.3 70B** 🔵 nube | ‹med› (TTFT muy bajo) | Alta | Free tier; muy alta velocidad | Datos salen a Groq | System prompt, OpenAI-compatible | REST/SSE |
+| **Llama 3.1 8B** 🟢 local | ‹med› | Alta | $0 · ~5–6 GB VRAM (Q4) | **Total (offline)** | System prompt, fine-tuning, GGUF | Ollama REST/streaming |
+| **Mistral 7B** 🟢 local | ‹med› | Alta | $0 · ~4–5 GB | **Total** | Íd. | Ollama |
+| **Phi-3.5** 🟢 local | ‹med› | Media-alta (muy eficiente) | $0 · ~2–3 GB | **Total** | Íd. | Ollama |
+| **Gemma 2 9B** 🟢 local | ‹med› | Muy alta | $0 · ~6–7 GB | **Total** | Íd. | Ollama |
+| **Qwen 2.5 7B** 🟢 local | ‹med› | Alta (multilingüe/código) | $0 · ~5–6 GB | **Total** | Íd. (buen soporte de tools) | Ollama |
 
 > Incluir aquí la **Tabla LLM — latencia y velocidad** generada y la figura
 > `figures/llm_ttft_vs_tps.png` (TTFT vs tokens/seg).
@@ -143,16 +163,18 @@ Vosk, Piper, eSpeak-NG) y, por definición, despliegue 100 % offline.
 
 ## 3.2 Reconocimiento de Voz (STT)
 
-### Matriz comparativa (5 motores × 6 dimensiones)
+### Matriz comparativa (servicios × 6 dimensiones)
 
-| Dimensión | faster-whisper | openai-whisper | whisper.cpp | Vosk | wav2vec2 (HF) |
-|-----------|----------------|----------------|-------------|------|----------------|
-| **1. Latencia/RTF** | ‹med› | ‹med› | ‹med› | ‹med› (muy bajo) | ‹med› |
-| **2. Precisión** (WER) | ‹med› (muy buena) | ‹med› | ‹med› | ‹med› (menor) | ‹med› |
-| **3. Costo/escala** | $0 · CPU/GPU, int8 eficiente | $0 · más pesado en CPU | $0 · óptimo en CPU (C++) | $0 · ultraligero (~50 MB) | $0 · requiere PyTorch |
-| **4. Privacidad** | Total (offline) | Total | Total | Total | Total |
-| **5. Customización** | tamaños de modelo, idioma, `initial_prompt` | tamaños/idioma | cuantización GGML | gramáticas/vocabulario | fine-tuning CTC |
-| **6. Integración** | API Python (CTranslate2) | API Python | binario CLI/subproceso | API Python streaming | `transformers` |
+| Servicio (tipo) | 1. Latencia/RTF | 2. Precisión (WER) | 3. Costo/escala | 4. Privacidad | 5. Customización | 6. Integración |
+|-----------------|-----------------|--------------------|-----------------|---------------|------------------|----------------|
+| **Deepgram nova-2** 🟣 nube | ‹med› (muy bajo) | ‹med› (alta) | $200 crédito free; luego $/min | Datos salen a Deepgram | keywords, modelos, diarización | REST + WebSocket |
+| **AssemblyAI** 🟣 nube | ‹med› | ‹med› (alta) | Free tier; luego $/h | Datos salen a AssemblyAI | word boost, modelos | REST (upload + polling) |
+| **Groq Whisper large-v3** 🔵 nube | ‹med› (muy rápido) | ‹med› (muy alta) | Free tier | Datos salen a Groq | idioma, prompt inicial | REST OpenAI-compatible |
+| **faster-whisper** 🟢 local | ‹med› | ‹med› (muy buena) | $0 · CPU/GPU, int8 | **Total (offline)** | tamaños, idioma, `initial_prompt` | Python (CTranslate2) |
+| **openai-whisper** 🟢 local | ‹med› | ‹med› | $0 · más pesado en CPU | **Total** | tamaños/idioma | Python |
+| **whisper.cpp** 🟢 local | ‹med› | ‹med› | $0 · óptimo en CPU (C++) | **Total** | cuantización GGML | binario CLI |
+| **Vosk** 🟢 local | ‹med› (muy bajo) | ‹med› (menor) | $0 · ultraligero (~50 MB) | **Total** | gramáticas/vocabulario | Python streaming |
+| **wav2vec2 (HF)** 🟢 local | ‹med› | ‹med› | $0 · requiere PyTorch | **Total** | fine-tuning CTC | `transformers` |
 
 > Incluir la **Tabla STT — latencia y precisión** y la figura
 > `figures/stt_latencia_vs_wer.png`.
@@ -168,20 +190,22 @@ Vosk, Piper, eSpeak-NG) y, por definición, despliegue 100 % offline.
 
 ## 3.3 Síntesis de Voz (TTS)
 
-### Matriz comparativa (5 motores × 6 dimensiones)
+### Matriz comparativa (servicios × 6 dimensiones)
 
-| Dimensión | Piper | Coqui XTTS v2 | Kokoro | eSpeak-NG | Bark |
-|-----------|-------|---------------|--------|-----------|------|
-| **1. Latencia/RTF** | ‹med› (muy bajo) | ‹med› (alto) | ‹med› | ‹med› (mínimo) | ‹med› (muy alto) |
-| **2. Calidad** (naturalidad) | Buena | Muy alta (clonación) | Alta | Baja (robótica) | Alta/expresiva |
-| **3. Costo/escala** | $0 · CPU eficiente (ONNX) | $0 · GPU recomendada | $0 · ligero | $0 · trivial | $0 · GPU, pesado |
-| **4. Privacidad** | Total (offline) | Total | Total | Total | Total |
-| **5. Customización** | voces por modelo | **clonación de voz** + idioma | voces/idiomas | fonemas/SSML básico | *prompts* de voz |
-| **6. Integración** | CLI/subproceso | API Python | API Python | CLI | API Python |
+| Servicio (tipo) | 1. Latencia/RTF | 2. Calidad (naturalidad) | 3. Costo/escala | 4. Privacidad | 5. Customización | 6. Integración |
+|-----------------|-----------------|--------------------------|-----------------|---------------|------------------|----------------|
+| **ElevenLabs mult. v2** 🟣 nube | ‹med› | Muy alta | 10k chars/mes free; luego $/char | Datos salen a ElevenLabs | **clonación de voz**, estilos | REST + streaming |
+| **Azure TTS (es-CR)** 🟣 nube | ‹med› | Muy alta (voces neuronales) | Free tier F0; luego $/char | Datos salen a Microsoft | SSML completo, voces es-CR | REST/SDK |
+| **OpenAI tts-1** 🔵 nube | ‹med› | Alta | $/char (bajo) | Datos salen a OpenAI | voces predefinidas, formato | REST |
+| **Piper** 🟢 local | ‹med› (muy bajo) | Buena | $0 · CPU eficiente (ONNX) | **Total (offline)** | voces por modelo | CLI/subproceso |
+| **Coqui XTTS v2** 🟢 local | ‹med› (alto) | Muy alta (clonación) | $0 · GPU recomendada | **Total** | **clonación de voz** + idioma | Python |
+| **Kokoro** 🟢 local | ‹med› | Alta | $0 · ligero | **Total** | voces/idiomas | Python |
+| **eSpeak-NG** 🟢 local | ‹med› (mínimo) | Baja (robótica) | $0 · trivial | **Total** | fonemas/SSML básico | CLI |
+| **Bark** 🟢 local | ‹med› (muy alto) | Alta/expresiva | $0 · GPU, pesado | **Total** | *prompts* de voz | Python |
 
 > Incluir la **Tabla TTS — latencia y RTF** y la figura
 > `figures/tts_latencia_vs_rtf.png`. Adjunte la **valoración cualitativa** de
-> naturalidad escuchando los WAV de `tts_output/` (escala 1–5 por motor).
+> naturalidad escuchando los audios de `tts_output/` (escala 1–5 por motor).
 
 ### Hallazgos
 - **Piper** ofrece el mejor compromiso naturalidad/latencia en CPU (RTF ≪ 1),
@@ -230,20 +254,34 @@ eSpeak-NG (TTS)**. Se sacrifica algo de precisión y naturalidad a cambio de la
 menor latencia de extremo a extremo, adecuado para kioscos o demos en hardware
 limitado.
 
-### Escenario C — Máxima calidad de experiencia (con GPU)
+### Escenario C — Máxima calidad de experiencia (con GPU, local)
 Cuando se dispone de GPU y la latencia no es crítica: **faster-whisper
 (modelo `medium/large`) + Gemma 2 9B o Qwen 2.5 (LLM) + Coqui XTTS v2 (TTS con
 clonación de voz)**. Maximiza precisión de transcripción, calidad de
-razonamiento y naturalidad/identidad de voz del agente.
+razonamiento y naturalidad/identidad de voz del agente, **sin que los datos
+salgan de la institución**.
+
+### Escenario D — Tiempo real en la nube, mínima latencia (sin GPU propia)
+Cuando la prioridad es la **latencia más baja posible** y se acepta que los
+datos salgan a un tercero: **Deepgram nova-2 (STT) + Groq Llama 3.3 70B (LLM,
+TTFT muy bajo) + ElevenLabs o Azure (TTS)**. Aprovecha la infraestructura del
+proveedor (free tier) para una experiencia muy fluida sin hardware local
+potente. **Contrapartida:** menor privacidad (datos en la nube) y dependencia de
+conectividad y de los límites de la capa gratuita; inadecuado si el requisito de
+soberanía de datos es estricto.
 
 ### Conclusión
-El estudio demuestra que es viable construir un agente virtual por voz
-**completo, privado y de costo operativo nulo** empleando exclusivamente
-software de código abierto local. La selección óptima no es única: depende del
-balance que cada escenario exige entre latencia, calidad y recursos de
-hardware. Los datos empíricos recolectados con este banco de pruebas
-—reproducible vía Docker— constituyen la base objetiva para esa decisión
-arquitectónica y para las fases posteriores del desarrollo del agente.
+El estudio demuestra que existe un **espectro de arquitecturas viables** para un
+agente virtual por voz, desde una solución **100 % local, privada y de costo
+operativo nulo** (Ollama + Whisper local + Piper) hasta una **basada en la nube
+de mínima latencia** (Groq + Deepgram + ElevenLabs) sin hardware propio. La
+selección óptima no es única: surge del balance que cada escenario exige entre
+**latencia, calidad, costo y privacidad**. El hallazgo central es que la
+soberanía de datos y la calidad de experiencia se ubican en extremos opuestos de
+ese espacio de diseño, y la decisión correcta depende del contexto institucional.
+Los datos empíricos recolectados con este banco de pruebas —reproducible vía
+Docker— constituyen la base objetiva para esa decisión arquitectónica y para las
+fases posteriores del desarrollo del agente.
 
 \newpage
 

@@ -1,24 +1,23 @@
 """
 benchmarks/tts_benchmark.py
 ===========================
-Banco de pruebas para motores de Sintesis de Voz (TTS) locales.
+Banco de pruebas para motores de Sintesis de Voz (TTS).
 
-Para cada motor sintetiza un texto en espanol y mide:
-  - Latencia total de sintesis (s).
-  - Duracion del audio generado y RTF (procesamiento / duracion).
-  - Guarda el WAV resultante en tts_output/ para la valoracion CUALITATIVA
-    de inteligibilidad y naturalidad (dimension de calidad del TTS).
+Catalogo BALANCEADO (config.TTS_ENGINES):
+  - Nube alta gama   : ElevenLabs (multilingual v2), Azure TTS (es-CR)
+  - Nube bajo costo  : OpenAI tts-1
+  - Local offline    : Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark
 
-Motores soportados (offline / codigo abierto):
-  - Piper      (ONNX, muy rapido)     engine="piper"
-  - Coqui XTTS v2 (clonacion de voz)  engine="coqui"
-  - Kokoro     (ligero, alta calidad) engine="kokoro"
-  - eSpeak-NG  (formant, baseline)    engine="espeak"
-  - Bark       (generativo, expresivo)engine="bark"
+Para cada motor sintetiza un texto en espanol y mide latencia de sintesis,
+duracion del audio y RTF. Guarda el audio en tts_output/ para la valoracion
+CUALITATIVA de inteligibilidad y naturalidad.
+
+Los motores en la nube se ACTIVAN solo si su API key esta en .env.
 
 Uso:
     python -m benchmarks.tts_benchmark
-    python -m benchmarks.tts_benchmark --engines piper espeak-ng
+    python -m benchmarks.tts_benchmark --engines piper OpenAI-tts-1
+    python -m benchmarks.tts_benchmark --only-local
 """
 from __future__ import annotations
 
@@ -27,6 +26,8 @@ import subprocess
 import sys
 import wave
 from pathlib import Path
+
+import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -38,86 +39,128 @@ from common.timer import LatencySample, measure
 RESULTS_CSV = config.RESULTS_DIR / "tts_results.csv"
 
 
-def wav_duration_s(path: Path) -> float:
+def audio_duration_s(path: Path) -> float:
+    """Duracion en segundos. WAV via modulo `wave`; otros formatos via librosa."""
     try:
         with wave.open(str(path), "rb") as wf:
             return wf.getnframes() / float(wf.getframerate())
     except Exception:
-        return 0.0
+        try:
+            import librosa
+            return float(librosa.get_duration(path=str(path)))
+        except Exception:
+            return 0.0
 
 
 # --------------------------------------------------------------------------
-#  Adaptadores por motor. Cada uno sintetiza `text` en `out_wav`.
+#  Adaptadores locales (offline). Firma: (text, out, spec) -> ruta de salida.
 # --------------------------------------------------------------------------
-def synth_piper(text: str, out_wav: Path, spec: dict) -> None:
+def tts_piper(text: str, out: Path, spec: dict) -> Path:
     voice = spec.get("voice")
     if not voice or not Path(voice).exists():
-        raise RuntimeError(f"Voz Piper no encontrada en '{voice}' (ver .env / models/piper)")
-    # piper lee el texto por stdin y escribe el WAV indicado.
-    proc = subprocess.run(
-        ["piper", "--model", voice, "--output_file", str(out_wav)],
-        input=text, text=True, capture_output=True, timeout=300,
-    )
+        raise RuntimeError(f"Voz Piper no encontrada en '{voice}' (ver .env)")
+    proc = subprocess.run(["piper", "--model", voice, "--output_file", str(out)],
+                          input=text, text=True, capture_output=True, timeout=300)
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr[:200])
+    return out
 
 
-def synth_espeak(text: str, out_wav: Path, spec: dict) -> None:
-    # espeak-ng debe estar instalado a nivel de sistema (apt/choco install espeak-ng).
-    proc = subprocess.run(
-        ["espeak-ng", "-v", spec.get("voice", "es"), "-w", str(out_wav), text],
-        capture_output=True, text=True, timeout=120,
-    )
+def tts_espeak(text: str, out: Path, spec: dict) -> Path:
+    proc = subprocess.run(["espeak-ng", "-v", spec.get("voice", "es"), "-w", str(out), text],
+                          capture_output=True, text=True, timeout=120)
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr[:200])
+    return out
 
 
-def synth_coqui(text: str, out_wav: Path, spec: dict) -> None:
+def tts_coqui(text: str, out: Path, spec: dict) -> Path:
     from TTS.api import TTS
     tts = TTS(spec["model"])
-    # XTTS v2 requiere un audio de referencia para la voz; usa uno corto en data/audio.
     speaker_wav = config.AUDIO_DIR / "speaker_ref.wav"
-    kwargs = {"text": text, "file_path": str(out_wav), "language": "es"}
+    kwargs = {"text": text, "file_path": str(out), "language": "es"}
     if speaker_wav.exists():
         kwargs["speaker_wav"] = str(speaker_wav)
     tts.tts_to_file(**kwargs)
+    return out
 
 
-def synth_kokoro(text: str, out_wav: Path, spec: dict) -> None:
+def tts_kokoro(text: str, out: Path, spec: dict) -> Path:
+    import numpy as np
     import soundfile as sf
     from kokoro import KPipeline
-    pipeline = KPipeline(lang_code="e")  # 'e' = espanol
-    audio_chunks = []
-    for _, _, audio in pipeline(text, voice=spec.get("voice", "ef_dora")):
-        audio_chunks.append(audio)
-    import numpy as np
-    sf.write(str(out_wav), np.concatenate(audio_chunks), 24000)
+    pipeline = KPipeline(lang_code="e")
+    chunks = [audio for _, _, audio in pipeline(text, voice=spec.get("voice", "ef_dora"))]
+    sf.write(str(out), np.concatenate(chunks), 24000)
+    return out
 
 
-def synth_bark(text: str, out_wav: Path, spec: dict) -> None:
+def tts_bark(text: str, out: Path, spec: dict) -> Path:
     import soundfile as sf
     from bark import SAMPLE_RATE, generate_audio, preload_models
     preload_models()
-    audio = generate_audio(text, history_prompt=spec.get("voice"))
-    sf.write(str(out_wav), audio, SAMPLE_RATE)
+    sf.write(str(out), generate_audio(text, history_prompt=spec.get("voice")), SAMPLE_RATE)
+    return out
+
+
+# --------------------------------------------------------------------------
+#  Adaptadores en la nube (REST). Se activan solo con API key en .env.
+# --------------------------------------------------------------------------
+def tts_elevenlabs(text: str, out: Path, spec: dict) -> Path:
+    out = out.with_suffix(".mp3")
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{spec['voice']}?output_format=mp3_44100_128"
+    headers = {"xi-api-key": config.get_key(spec), "Content-Type": "application/json"}
+    payload = {"text": text, "model_id": spec["model"]}
+    r = requests.post(url, headers=headers, json=payload, timeout=300)
+    r.raise_for_status()
+    out.write_bytes(r.content)
+    return out
+
+
+def tts_openai(text: str, out: Path, spec: dict) -> Path:
+    url = f"{spec['base_url']}/audio/speech"
+    headers = {"Authorization": f"Bearer {config.get_key(spec)}", "Content-Type": "application/json"}
+    payload = {"model": spec["model"], "voice": spec["voice"], "input": text, "response_format": "wav"}
+    r = requests.post(url, headers=headers, json=payload, timeout=300)
+    r.raise_for_status()
+    out.write_bytes(r.content)
+    return out
+
+
+def tts_azure(text: str, out: Path, spec: dict) -> Path:
+    region = config.AZURE_SPEECH_REGION
+    url = f"https://{region}.tts.speech.microsoft.com/cognitiveservices/v1"
+    headers = {
+        "Ocp-Apim-Subscription-Key": config.get_key(spec),
+        "Content-Type": "application/ssml+xml",
+        "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
+    }
+    voice = spec.get("voice", "es-CR-JuanNeural")
+    ssml = (f"<speak version='1.0' xml:lang='es-CR'><voice xml:lang='es-CR' "
+            f"name='{voice}'>{text}</voice></speak>")
+    r = requests.post(url, headers=headers, data=ssml.encode("utf-8"), timeout=300)
+    r.raise_for_status()
+    out.write_bytes(r.content)
+    return out
 
 
 DISPATCH = {
-    "piper": synth_piper,
-    "espeak": synth_espeak,
-    "coqui": synth_coqui,
-    "kokoro": synth_kokoro,
-    "bark": synth_bark,
+    "piper": tts_piper, "espeak": tts_espeak, "coqui": tts_coqui,
+    "kokoro": tts_kokoro, "bark": tts_bark,
+    "elevenlabs": tts_elevenlabs, "openai_tts": tts_openai, "azure": tts_azure,
 }
 
 
 def benchmark_engine(label: str, spec: dict, text: str, n_runs: int) -> None:
+    if not config.has_key(spec):
+        print(f"  [SKIP] {label}: falta {spec.get('key_env')} en .env.")
+        return
     fn = DISPATCH.get(spec["engine"])
     if fn is None:
         print(f"  [SKIP] motor desconocido: {spec['engine']}")
         return
 
-    print(f"\n>>> Motor TTS: {label}")
+    print(f"\n>>> TTS: {label}  [{spec['tier']}]")
     total_runs = n_runs + (1 if config.DISCARD_WARMUP else 0)
     for run in range(1, total_runs + 1):
         warmup = config.DISCARD_WARMUP and run == 1
@@ -125,40 +168,39 @@ def benchmark_engine(label: str, spec: dict, text: str, n_runs: int) -> None:
         sample = LatencySample()
         try:
             with measure() as elapsed:
-                fn(text, out_wav, spec)
+                produced = fn(text, out_wav, spec)
             sample.total_s = elapsed[0]
-            dur = wav_duration_s(out_wav)
-            rtf = real_time_factor(sample.total_s, dur)
-            sample.extra = {"audio_s": round(dur, 3), "rtf": round(rtf, 3)}
+            dur = audio_duration_s(produced)
+            sample.extra = {"audio_s": round(dur, 3), "rtf": round(real_time_factor(sample.total_s, dur), 3)}
         except Exception as e:
-            sample.ok = False
-            sample.error = str(e)
-            print(f"    [ERROR] {label}: {e}")
-            append_row(RESULTS_CSV, make_row("TTS", label, "tts_text_es", run, warmup, sample))
+            sample.ok = False; sample.error = str(e)
+            print(f"    [ERROR] {label}: {str(e)[:80]}")
+            append_row(RESULTS_CSV, make_row("TTS", label, "tts_text_es", run, warmup, sample,
+                                             notes=f"tier={spec['tier']}"))
             return
-
         tag = "calentamiento" if warmup else f"corrida {run - (1 if config.DISCARD_WARMUP else 0)}"
         print(f"    [{tag:14s}] sintesis={sample.total_s:6.2f}s  audio={sample.extra['audio_s']:.2f}s  RTF={sample.extra['rtf']:.2f}")
-
         append_row(RESULTS_CSV, make_row(
             "TTS", label, "tts_text_es", run, warmup, sample,
             metric_name="rtf", metric_value=sample.extra["rtf"],
-            notes=f"audio_s={sample.extra['audio_s']}; wav={out_wav.name}",
-        ))
+            notes=f"tier={spec['tier']}; audio_s={sample.extra['audio_s']}"))
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Benchmark de TTS locales.")
-    parser.add_argument("--engines", nargs="*", default=None)
-    parser.add_argument("--runs", type=int, default=config.N_RUNS)
-    args = parser.parse_args()
+    p = argparse.ArgumentParser(description="Benchmark de TTS (nube + local).")
+    p.add_argument("--engines", nargs="*", default=None)
+    p.add_argument("--only-local", action="store_true")
+    p.add_argument("--runs", type=int, default=config.N_RUNS)
+    args = p.parse_args()
 
     text = config.TTS_TEXT_FILE.read_text(encoding="utf-8").strip()
     print(f"Texto de prueba ({len(text)} caracteres): {text[:60]}...")
 
-    selected = config.TTS_ENGINES
+    selected = dict(config.TTS_ENGINES)
     if args.engines:
-        selected = {k: v for k, v in config.TTS_ENGINES.items() if k in args.engines}
+        selected = {k: v for k, v in selected.items() if k in args.engines}
+    if args.only_local:
+        selected = {k: v for k, v in selected.items() if v["kind"] == "local"}
 
     for label, spec in selected.items():
         benchmark_engine(label, spec, text, args.runs)

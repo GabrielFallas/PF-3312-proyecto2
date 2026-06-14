@@ -1,24 +1,39 @@
 # Benchmarking de Servicios de IA — PF-3312 (Proyecto 2)
 
 Banco de pruebas **reproducible y dockerizado** para evaluar empíricamente
-servicios cognitivos **locales y de código abierto** en tres categorías:
-**LLM** (lenguaje y razonamiento), **STT** (reconocimiento de voz) y
-**TTS** (síntesis de voz). Mide latencia, calidad y eficiencia, y consolida
-los resultados en tablas y gráficos para el reporte técnico.
+servicios cognitivos en tres categorías: **LLM** (lenguaje y razonamiento),
+**STT** (reconocimiento de voz) y **TTS** (síntesis de voz). La muestra incluye
+el **balance** que exige el enunciado: comercial de alta gama en la nube,
+comercial de bajo costo/alta velocidad y open-source local. Mide latencia,
+calidad y eficiencia, y consolida los resultados en tablas y gráficos.
 
-> **Privacidad por diseño:** todos los servicios se ejecutan offline en la
-> máquina local. No se envía dato alguno a la nube ni se requieren llaves de
-> API de pago.
+> **Costo cero:** los servicios en la nube se usan vía su **capa gratuita** y se
+> activan solo si configuras su API key en `.env`; los locales corren 100 %
+> offline. Las llaves nunca se versionan (`.gitignore`). Si solo quieres la ruta
+> local y privada, usa la bandera `--only-local` en cualquier benchmark.
 
 ---
 
-## 1. Servicios evaluados (15 = 5 × 3)
+## 1. Servicios evaluados (≥ 15, balance de 3 tipos)
 
-| Categoría | Servicios (todos open-source / locales) |
-|-----------|------------------------------------------|
-| **LLM** (vía Ollama) | `llama3.1:8b`, `mistral:7b`, `phi3.5`, `gemma2:9b`, `qwen2.5:7b` |
-| **STT** | faster-whisper, openai-whisper, whisper.cpp, Vosk, wav2vec2 (HF) |
-| **TTS** | Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark |
+El enunciado exige un **balance representativo**: comercial de alta gama en la
+nube, comercial de bajo costo/alta velocidad, y open-source local. Para mantener
+el **costo en cero**, los servicios en la nube se consumen vía su **capa
+gratuita (free tier)**. Cada servicio en la nube se **activa solo si su API key
+está en `.env`**; si no, se omite y el resto continúa.
+
+| Categoría | 🟣 Nube alta gama | 🔵 Nube bajo costo/rápido | 🟢 Local offline |
+|-----------|-------------------|---------------------------|------------------|
+| **LLM** | Gemini 1.5 Pro · GPT-4o* | Groq Llama 3.3 70B | Llama 3.1 8B · Mistral 7B · Phi-3.5 · Gemma 2 9B · Qwen 2.5 7B |
+| **STT** | Deepgram nova-2 · AssemblyAI | Groq Whisper large-v3 | faster-whisper · openai-whisper · whisper.cpp · Vosk · wav2vec2 |
+| **TTS** | ElevenLabs · Azure TTS | OpenAI tts-1 | Piper · Coqui XTTS v2 · Kokoro · eSpeak-NG · Bark |
+
+<sub>*GPT-4o requiere saldo de pago; es opcional. El resto opera en free tier o local.</sub>
+
+**Free tiers (registro gratuito):** [Google AI Studio](https://aistudio.google.com/apikey)
+(Gemini) · [Groq](https://console.groq.com/keys) · [Deepgram](https://console.deepgram.com)
+· [AssemblyAI](https://www.assemblyai.com) · [ElevenLabs](https://elevenlabs.io)
+· [Azure Speech](https://portal.azure.com). Copia cada llave a tu `.env`.
 
 Dimensiones medidas: **latencia** (TTFT/total, RTF), **precisión/calidad**
 (WER, valoración cualitativa), **costo/escalabilidad**, **privacidad**,

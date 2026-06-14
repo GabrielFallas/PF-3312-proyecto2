@@ -61,6 +61,11 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+    # Carga las API keys de los servicios en la nube desde .env (si existe).
+    # El .env NO se versiona; las llaves nunca quedan en la imagen.
+    env_file:
+      - path: .env
+        required: false
     environment:
       - OLLAMA_HOST=http://ollama:11434
       - N_RUNS=5
