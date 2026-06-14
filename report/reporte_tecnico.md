@@ -82,19 +82,22 @@ servicios en la nube se consumen mediante su **capa gratuita (free tier)**.
 
 | Categoría | Nube — alta gama | Nube — bajo costo/rápido | Local — offline |
 |-----------|------------------|--------------------------|-----------------|
-| **LLM** | Gemini 1.5 Pro; GPT-4o* | Groq Llama 3.3 70B | Llama 3.1 8B, Mistral 7B, Phi-3.5, Gemma 2 9B, Qwen 2.5 7B |
+| **LLM** | Gemini 2.5 Pro | Gemini 2.5 Flash; Groq Llama 3.3 70B | Llama 3.1 8B, Mistral 7B, Phi-3.5, Gemma 2 9B, Qwen 2.5 7B |
 | **STT** | Deepgram nova-2; AssemblyAI | Groq Whisper large-v3 | faster-whisper, openai-whisper, whisper.cpp, Vosk, wav2vec2 |
-| **TTS** | ElevenLabs (mult. v2); Azure TTS | OpenAI tts-1 | Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark |
+| **TTS** | ElevenLabs multilingual v2 | ElevenLabs Flash v2.5; Deepgram Aura 2 | Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark |
 
-<sup>*GPT-4o requiere saldo; opcional. Cada servicio en la nube se activa solo si
-su API key está configurada en `.env`.</sup>
+Solo se emplean proveedores con **capa gratuita real**; se descartan OpenAI,
+Anthropic y Azure por carecer de acceso gratuito práctico. Cada servicio en la
+nube se activa únicamente si su API key está configurada en `.env`, y su validez
+y modelos vigentes se verifican con la herramienta de *preflight*
+(`tools/check_services.py`) sin consumir cuota de uso.
 
 Así, cada categoría supera el mínimo de 5 servicios e incluye: capacidad de alta
-gama en la nube (Gemini, Deepgram, ElevenLabs), opciones de bajo costo/alta
-velocidad (Groq, OpenAI tts-1) y despliegue 100 % offline (Ollama, Whisper
-local, Piper, etc.). Los datos sensibles solo salen de la máquina en los
-servicios en la nube; las alternativas locales garantizan aislamiento absoluto
-(ver dimensión de privacidad).
+gama en la nube (Gemini 2.5 Pro, Deepgram, ElevenLabs), opciones de bajo
+costo/alta velocidad (Gemini 2.5 Flash, Groq, Deepgram Aura) y despliegue 100 %
+offline (Ollama, Whisper local, Piper, etc.). Los datos sensibles solo salen de
+la máquina en los servicios en la nube; las alternativas locales garantizan
+aislamiento absoluto (ver dimensión de privacidad).
 
 ## Insumos de prueba controlados
 
@@ -139,9 +142,9 @@ servicios en la nube; las alternativas locales garantizan aislamiento absoluto
 
 | Servicio (tipo) | 1. Latencia (TTFT/total) | 2. Calidad | 3. Costo/escala | 4. Privacidad | 5. Customización | 6. Integración |
 |-----------------|--------------------------|-----------|-----------------|---------------|------------------|----------------|
-| **Gemini 1.5 Pro** 🟣 nube | ‹med›/‹med› | Muy alta (razonamiento, contexto largo) | Free tier; luego $/1M tokens | Datos salen a Google; opt-out según plan | System instruction, tools, JSON mode | REST/SSE, SDK oficial |
-| **GPT-4o** 🟣 nube | ‹med› | Muy alta | De pago $/1M tokens | Política OpenAI (no entrena con API por defecto) | System prompt, function calling | REST/SSE, OpenAI-compatible |
-| **Groq Llama 3.3 70B** 🔵 nube | ‹med› (TTFT muy bajo) | Alta | Free tier; muy alta velocidad | Datos salen a Groq | System prompt, OpenAI-compatible | REST/SSE |
+| **Gemini 2.5 Pro** 🟣 nube | ‹med›/‹med› | Muy alta (razonamiento, contexto largo) | Free tier; luego $/1M tokens | Datos salen a Google; opt-out según plan | System instruction, tools, JSON mode | REST/SSE, SDK oficial |
+| **Gemini 2.5 Flash** 🔵 nube | ‹med› | Alta (moderno, muy rápido) | Free tier amplio | Datos salen a Google | System instruction, tools, JSON mode | REST/SSE |
+| **Groq Llama 3.3 70B** 🔵 nube | ‹med› (TTFT muy bajo) | Alta | Free tier; muy alta velocidad (LPU) | Datos salen a Groq | System prompt, OpenAI-compatible | REST/SSE |
 | **Llama 3.1 8B** 🟢 local | ‹med› | Alta | $0 · ~5–6 GB VRAM (Q4) | **Total (offline)** | System prompt, fine-tuning, GGUF | Ollama REST/streaming |
 | **Mistral 7B** 🟢 local | ‹med› | Alta | $0 · ~4–5 GB | **Total** | Íd. | Ollama |
 | **Phi-3.5** 🟢 local | ‹med› | Media-alta (muy eficiente) | $0 · ~2–3 GB | **Total** | Íd. | Ollama |
@@ -195,8 +198,8 @@ servicios en la nube; las alternativas locales garantizan aislamiento absoluto
 | Servicio (tipo) | 1. Latencia/RTF | 2. Calidad (naturalidad) | 3. Costo/escala | 4. Privacidad | 5. Customización | 6. Integración |
 |-----------------|-----------------|--------------------------|-----------------|---------------|------------------|----------------|
 | **ElevenLabs mult. v2** 🟣 nube | ‹med› | Muy alta | 10k chars/mes free; luego $/char | Datos salen a ElevenLabs | **clonación de voz**, estilos | REST + streaming |
-| **Azure TTS (es-CR)** 🟣 nube | ‹med› | Muy alta (voces neuronales) | Free tier F0; luego $/char | Datos salen a Microsoft | SSML completo, voces es-CR | REST/SDK |
-| **OpenAI tts-1** 🔵 nube | ‹med› | Alta | $/char (bajo) | Datos salen a OpenAI | voces predefinidas, formato | REST |
+| **ElevenLabs Flash v2.5** 🔵 nube | ‹med› (baja latencia) | Alta | Mismo free tier | Datos salen a ElevenLabs | voces, idioma (multilingüe) | REST + streaming |
+| **Deepgram Aura 2** 🔵 nube | ‹med› (muy bajo) | Alta (orientado a inglés) | $200 crédito free | Datos salen a Deepgram | voces, formato de salida | REST + WebSocket |
 | **Piper** 🟢 local | ‹med› (muy bajo) | Buena | $0 · CPU eficiente (ONNX) | **Total (offline)** | voces por modelo | CLI/subproceso |
 | **Coqui XTTS v2** 🟢 local | ‹med› (alto) | Muy alta (clonación) | $0 · GPU recomendada | **Total** | **clonación de voz** + idioma | Python |
 | **Kokoro** 🟢 local | ‹med› | Alta | $0 · ligero | **Total** | voces/idiomas | Python |
@@ -263,8 +266,8 @@ salgan de la institución**.
 
 ### Escenario D — Tiempo real en la nube, mínima latencia (sin GPU propia)
 Cuando la prioridad es la **latencia más baja posible** y se acepta que los
-datos salgan a un tercero: **Deepgram nova-2 (STT) + Groq Llama 3.3 70B (LLM,
-TTFT muy bajo) + ElevenLabs o Azure (TTS)**. Aprovecha la infraestructura del
+datos salgan a un tercero: **Deepgram nova-2 (STT) + Gemini 2.5 Flash o Groq
+Llama 3.3 70B (LLM, TTFT muy bajo) + ElevenLabs Flash v2.5 (TTS)**. Aprovecha la infraestructura del
 proveedor (free tier) para una experiencia muy fluida sin hardware local
 potente. **Contrapartida:** menor privacidad (datos en la nube) y dependencia de
 conectividad y de los límites de la capa gratuita; inadecuado si el requisito de

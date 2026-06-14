@@ -176,8 +176,9 @@ def benchmark_engine(label: str, spec: dict, audio: Path, reference: str,
         print(f"  [SKIP] motor desconocido: {spec['engine']}")
         return
 
+    runs_here = config.CLOUD_N_RUNS if spec.get("kind") == "cloud" else n_runs
     print(f"\n>>> STT: {label}  [{spec['tier']}]")
-    total_runs = n_runs + (1 if config.DISCARD_WARMUP else 0)
+    total_runs = runs_here + (1 if config.DISCARD_WARMUP else 0)
     for run in range(1, total_runs + 1):
         warmup = config.DISCARD_WARMUP and run == 1
         sample, text = LatencySample(), ""
@@ -204,6 +205,8 @@ def benchmark_engine(label: str, spec: dict, audio: Path, reference: str,
             "service": label, "tier": spec["tier"], "run": run, "warmup": warmup,
             "total_s": sample.total_s, "wer": sample.extra["wer"],
             "rtf": sample.extra["rtf"], "hypothesis": text})
+        if spec.get("kind") == "cloud" and config.CLOUD_REQUEST_DELAY:
+            time.sleep(config.CLOUD_REQUEST_DELAY)
 
 
 def main() -> None:

@@ -48,6 +48,21 @@ for _d in (RESULTS_DIR, AUDIO_DIR, MODELS_DIR, TTS_OUTPUT_DIR):
 N_RUNS = int(os.getenv("N_RUNS", "5"))      # rubrica: >= 5 corridas limpias
 DISCARD_WARMUP = True                       # descartar la 1a corrida (calentamiento)
 
+# Pausa (segundos) entre peticiones a servicios EN LA NUBE para respetar los
+# limites de peticiones por minuto de las capas gratuitas (free tier). No afecta
+# la medicion de latencia (se aplica DESPUES de cronometrar cada corrida).
+CLOUD_REQUEST_DELAY = float(os.getenv("CLOUD_REQUEST_DELAY", "1.5"))
+
+# Tope de tokens de SALIDA para LLMs en la nube. Limita el consumo de cuota
+# (los free tier mas restrictivos, como Gemini Pro, se agotan rapido) para poder
+# repetir las pruebas sin problemas. Los modelos LOCALES no tienen este limite.
+# Sube este valor solo si necesitas respuestas mas largas en la nube.
+CLOUD_MAX_OUTPUT_TOKENS = int(os.getenv("CLOUD_MAX_OUTPUT_TOKENS", "256"))
+
+# Corridas para servicios en la nube. Por defecto = N_RUNS (rubrica: >= 5), pero
+# se puede bajar para conservar cuota durante pruebas exploratorias.
+CLOUD_N_RUNS = int(os.getenv("CLOUD_N_RUNS", str(N_RUNS)))
+
 # --- Endpoint de Ollama (LLMs locales) ---
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
@@ -56,24 +71,25 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 #  CATALOGO DE LLMs  (balance: nube-alta-gama / nube-bajo-costo / local)
 # ==========================================================================
 LLM_SERVICES = {
-    # --- Nube, alta gama (free tier de Google AI Studio) ---
-    "Gemini-1.5-Pro": {
+    # --- Nube, alta gama (Google AI Studio free tier; modelo moderno 2.5) ---
+    "Gemini-2.5-Pro": {
         "kind": "cloud", "tier": "nube-alta-gama", "provider": "gemini",
-        "model": "gemini-1.5-pro", "key_env": "GEMINI_API_KEY",
+        "model": "gemini-2.5-pro", "key_env": "GEMINI_API_KEY",
     },
-    # --- Nube, alta gama (OpenAI; opcional, requiere saldo) ---
-    "GPT-4o": {
-        "kind": "cloud", "tier": "nube-alta-gama", "provider": "openai_compat",
-        "base_url": "https://api.openai.com/v1", "model": "gpt-4o",
-        "key_env": "OPENAI_API_KEY",
+    # --- Nube, bajo costo / alta velocidad (Gemini Flash: moderno, rapido, free) ---
+    "Gemini-2.5-Flash": {
+        "kind": "cloud", "tier": "nube-bajo-costo", "provider": "gemini",
+        "model": "gemini-2.5-flash", "key_env": "GEMINI_API_KEY",
     },
-    # --- Nube, bajo costo / alta velocidad (Groq free tier, OpenAI-compatible) ---
+    # --- Nube, bajo costo / alta velocidad (Groq LPU, OpenAI-compatible) ---
+    # NOTA: ejecuta `python -m tools.check_services` para elegir un modelo vigente.
+    # Modelos modernos tipicos en Groq: llama-3.3-70b-versatile, llama-3.1-8b-instant.
     "Groq-Llama-3.3-70B": {
         "kind": "cloud", "tier": "nube-bajo-costo", "provider": "openai_compat",
         "base_url": "https://api.groq.com/openai/v1",
         "model": "llama-3.3-70b-versatile", "key_env": "GROQ_API_KEY",
     },
-    # --- Locales (Ollama, offline) ---
+    # --- Locales (Ollama, offline). Verifica con `ollama list`/preflight. ---
     "Llama-3.1-8B-local": {"kind": "local", "tier": "local", "provider": "ollama", "model": "llama3.1:8b"},
     "Mistral-7B-local": {"kind": "local", "tier": "local", "provider": "ollama", "model": "mistral:7b"},
     "Phi-3.5-local": {"kind": "local", "tier": "local", "provider": "ollama", "model": "phi3.5"},
@@ -117,22 +133,25 @@ STT_ENGINES = {
 #  CATALOGO DE TTS  (balance: nube-alta-gama / nube-bajo-costo / local)
 # ==========================================================================
 TTS_ENGINES = {
-    # --- Nube, alta gama (free tier) ---
+    # --- Nube, alta gama (ElevenLabs free tier; modelo multilingue de calidad) ---
     "ElevenLabs-multilingual-v2": {
         "kind": "cloud", "tier": "nube-alta-gama", "engine": "elevenlabs",
         "model": "eleven_multilingual_v2",
         "voice": os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL"),
         "key_env": "ELEVENLABS_API_KEY",
     },
-    "Azure-TTS-es": {
-        "kind": "cloud", "tier": "nube-alta-gama", "engine": "azure",
-        "voice": "es-CR-JuanNeural", "key_env": "AZURE_SPEECH_KEY",
+    # --- Nube, bajo costo / alta velocidad (ElevenLabs Flash: moderno, baja latencia) ---
+    "ElevenLabs-flash-v2.5": {
+        "kind": "cloud", "tier": "nube-bajo-costo", "engine": "elevenlabs",
+        "model": "eleven_flash_v2_5",
+        "voice": os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL"),
+        "key_env": "ELEVENLABS_API_KEY",
     },
-    # --- Nube, bajo costo (OpenAI TTS) ---
-    "OpenAI-tts-1": {
-        "kind": "cloud", "tier": "nube-bajo-costo", "engine": "openai_tts",
-        "base_url": "https://api.openai.com/v1", "model": "tts-1",
-        "voice": "alloy", "key_env": "OPENAI_API_KEY",
+    # --- Nube, bajo costo / alta velocidad (Deepgram Aura; usa el credito Deepgram) ---
+    # NOTA: Aura prioriza ingles; valido como punto de comparacion de latencia.
+    "Deepgram-Aura-2": {
+        "kind": "cloud", "tier": "nube-bajo-costo", "engine": "deepgram_tts",
+        "model": "aura-2-celeste-en", "key_env": "DEEPGRAM_API_KEY",
     },
     # --- Locales (offline) ---
     "piper": {"kind": "local", "tier": "local", "engine": "piper", "voice": os.getenv("PIPER_VOICE", "")},
@@ -142,9 +161,6 @@ TTS_ENGINES = {
     "bark": {"kind": "local", "tier": "local", "engine": "bark", "voice": "v2/es_speaker_0"},
 }
 
-
-# --- Parametros de servicios en la nube ---
-AZURE_SPEECH_REGION = os.getenv("AZURE_SPEECH_REGION", "eastus")
 
 # --- Rutas de binarios/modelos locales opcionales (desde .env) ---
 WHISPER_CPP_BIN = os.getenv("WHISPER_CPP_BIN", "")

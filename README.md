@@ -24,16 +24,21 @@ está en `.env`**; si no, se omite y el resto continúa.
 
 | Categoría | 🟣 Nube alta gama | 🔵 Nube bajo costo/rápido | 🟢 Local offline |
 |-----------|-------------------|---------------------------|------------------|
-| **LLM** | Gemini 1.5 Pro · GPT-4o* | Groq Llama 3.3 70B | Llama 3.1 8B · Mistral 7B · Phi-3.5 · Gemma 2 9B · Qwen 2.5 7B |
+| **LLM** | Gemini 2.5 Pro | Gemini 2.5 Flash · Groq Llama 3.3 70B | Llama 3.1 8B · Mistral 7B · Phi-3.5 · Gemma 2 9B · Qwen 2.5 7B |
 | **STT** | Deepgram nova-2 · AssemblyAI | Groq Whisper large-v3 | faster-whisper · openai-whisper · whisper.cpp · Vosk · wav2vec2 |
-| **TTS** | ElevenLabs · Azure TTS | OpenAI tts-1 | Piper · Coqui XTTS v2 · Kokoro · eSpeak-NG · Bark |
+| **TTS** | ElevenLabs multilingual v2 | ElevenLabs Flash v2.5 · Deepgram Aura 2 | Piper · Coqui XTTS v2 · Kokoro · eSpeak-NG · Bark |
 
-<sub>*GPT-4o requiere saldo de pago; es opcional. El resto opera en free tier o local.</sub>
+> Se evitan **OpenAI, Anthropic y Azure** por no ofrecer un acceso gratuito
+> práctico. Se usan solo proveedores con **free tier real**.
 
 **Free tiers (registro gratuito):** [Google AI Studio](https://aistudio.google.com/apikey)
 (Gemini) · [Groq](https://console.groq.com/keys) · [Deepgram](https://console.deepgram.com)
-· [AssemblyAI](https://www.assemblyai.com) · [ElevenLabs](https://elevenlabs.io)
-· [Azure Speech](https://portal.azure.com). Copia cada llave a tu `.env`.
+· [AssemblyAI](https://www.assemblyai.com) · [ElevenLabs](https://elevenlabs.io).
+Copia cada llave a tu `.env` (nunca a `.env.example`).
+
+> **Antes de gastar cuota**, valida tus llaves y descubre los modelos vigentes
+> con el *preflight* (solo lectura, no consume uso):
+> `python -m tools.check_services --show-models`
 
 Dimensiones medidas: **latencia** (TTFT/total, RTF), **precisión/calidad**
 (WER, valoración cualitativa), **costo/escalabilidad**, **privacidad**,
@@ -159,6 +164,19 @@ ffmpeg -i tu_audio.mp3 -ar 16000 -ac 1 data/audio/muestra_es.wav
 - **TTS:** latencia de síntesis, duración del audio y **RTF**; el WAV se guarda
   para la valoración cualitativa de naturalidad.
 - Toda ejecución individual se persiste en `results/*.csv` (formato largo).
+
+### Conservación de cuota (free tier)
+Para no agotar las capas gratuitas durante las pruebas, los servicios **en la
+nube** aplican automáticamente (configurable en `.env`):
+- `CLOUD_MAX_OUTPUT_TOKENS` (def. 256): topa los tokens de salida de los LLM en
+  la nube (los locales no se ven afectados).
+- `CLOUD_N_RUNS` (def. = `N_RUNS`): permite usar menos corridas en la nube
+  durante la exploración; **súbelo a ≥ 5 para el benchmark final** que reportas.
+- `CLOUD_REQUEST_DELAY` (def. 1.5 s): pausa entre llamadas para respetar el
+  límite de peticiones por minuto.
+
+Ejecuta siempre antes `python -m tools.check_services` para validar llaves y ver
+modelos vigentes **sin consumir cuota**.
 
 ---
 

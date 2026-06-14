@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -177,13 +178,21 @@ def benchmark_service(label: str, svc: dict, cases: list[dict], system: str,
             return
 
     fn = DISPATCH[svc["provider"]]
-    print(f"\n>>> {label}  [{svc['tier']}]")
-    total_runs = n_runs + (1 if config.DISCARD_WARMUP else 0)
+    is_cloud = svc.get("kind") == "cloud"
+    # En la nube usamos menos corridas (conservar cuota) y topamos los tokens de
+    # salida para que las pruebas no agoten el free tier.
+    runs_here = config.CLOUD_N_RUNS if is_cloud else n_runs
+    print(f"\n>>> {label}  [{svc['tier']}]"
+          + (f"  (nube: {runs_here} corridas, max {config.CLOUD_MAX_OUTPUT_TOKENS} tokens)" if is_cloud else ""))
+    total_runs = runs_here + (1 if config.DISCARD_WARMUP else 0)
     for case in cases:
         cid = case["id"]
+        max_tokens = case.get("max_tokens", 256)
+        if is_cloud:
+            max_tokens = min(max_tokens, config.CLOUD_MAX_OUTPUT_TOKENS)
         for run in range(1, total_runs + 1):
             warmup = config.DISCARD_WARMUP and run == 1
-            sample, text = fn(svc, system, case["prompt"], case.get("max_tokens", 256))
+            sample, text = fn(svc, system, case["prompt"], max_tokens)
             tag = "calentamiento" if warmup else f"corrida {run - (1 if config.DISCARD_WARMUP else 0)}"
             ttft = f"{sample.ttft_s*1000:.0f} ms" if sample.ttft_s else "n/a"
             status = "OK" if sample.ok else f"ERR({sample.error[:32]})"
@@ -198,6 +207,9 @@ def benchmark_service(label: str, svc: dict, cases: list[dict], system: str,
                 "warmup": warmup, "ttft_s": sample.ttft_s, "total_s": sample.total_s,
                 "ok": sample.ok, "output": text,
             })
+            # Respeta el limite de peticiones/min del free tier (no afecta la medicion).
+            if svc.get("kind") == "cloud" and config.CLOUD_REQUEST_DELAY:
+                time.sleep(config.CLOUD_REQUEST_DELAY)
 
 
 def main() -> None:

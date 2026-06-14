@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import time
 import wave
 from pathlib import Path
 
@@ -117,28 +118,12 @@ def tts_elevenlabs(text: str, out: Path, spec: dict) -> Path:
     return out
 
 
-def tts_openai(text: str, out: Path, spec: dict) -> Path:
-    url = f"{spec['base_url']}/audio/speech"
-    headers = {"Authorization": f"Bearer {config.get_key(spec)}", "Content-Type": "application/json"}
-    payload = {"model": spec["model"], "voice": spec["voice"], "input": text, "response_format": "wav"}
-    r = requests.post(url, headers=headers, json=payload, timeout=300)
-    r.raise_for_status()
-    out.write_bytes(r.content)
-    return out
-
-
-def tts_azure(text: str, out: Path, spec: dict) -> Path:
-    region = config.AZURE_SPEECH_REGION
-    url = f"https://{region}.tts.speech.microsoft.com/cognitiveservices/v1"
-    headers = {
-        "Ocp-Apim-Subscription-Key": config.get_key(spec),
-        "Content-Type": "application/ssml+xml",
-        "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
-    }
-    voice = spec.get("voice", "es-CR-JuanNeural")
-    ssml = (f"<speak version='1.0' xml:lang='es-CR'><voice xml:lang='es-CR' "
-            f"name='{voice}'>{text}</voice></speak>")
-    r = requests.post(url, headers=headers, data=ssml.encode("utf-8"), timeout=300)
+def tts_deepgram(text: str, out: Path, spec: dict) -> Path:
+    """Deepgram Aura TTS (REST). Devuelve WAV PCM 24 kHz."""
+    url = (f"https://api.deepgram.com/v1/speak?model={spec['model']}"
+           f"&encoding=linear16&container=wav&sample_rate=24000")
+    headers = {"Authorization": f"Token {config.get_key(spec)}", "Content-Type": "application/json"}
+    r = requests.post(url, headers=headers, json={"text": text}, timeout=300)
     r.raise_for_status()
     out.write_bytes(r.content)
     return out
@@ -147,7 +132,7 @@ def tts_azure(text: str, out: Path, spec: dict) -> Path:
 DISPATCH = {
     "piper": tts_piper, "espeak": tts_espeak, "coqui": tts_coqui,
     "kokoro": tts_kokoro, "bark": tts_bark,
-    "elevenlabs": tts_elevenlabs, "openai_tts": tts_openai, "azure": tts_azure,
+    "elevenlabs": tts_elevenlabs, "deepgram_tts": tts_deepgram,
 }
 
 
@@ -160,8 +145,9 @@ def benchmark_engine(label: str, spec: dict, text: str, n_runs: int) -> None:
         print(f"  [SKIP] motor desconocido: {spec['engine']}")
         return
 
+    runs_here = config.CLOUD_N_RUNS if spec.get("kind") == "cloud" else n_runs
     print(f"\n>>> TTS: {label}  [{spec['tier']}]")
-    total_runs = n_runs + (1 if config.DISCARD_WARMUP else 0)
+    total_runs = runs_here + (1 if config.DISCARD_WARMUP else 0)
     for run in range(1, total_runs + 1):
         warmup = config.DISCARD_WARMUP and run == 1
         out_wav = config.TTS_OUTPUT_DIR / f"{label}_run{run}.wav"
@@ -184,6 +170,8 @@ def benchmark_engine(label: str, spec: dict, text: str, n_runs: int) -> None:
             "TTS", label, "tts_text_es", run, warmup, sample,
             metric_name="rtf", metric_value=sample.extra["rtf"],
             notes=f"tier={spec['tier']}; audio_s={sample.extra['audio_s']}"))
+        if spec.get("kind") == "cloud" and config.CLOUD_REQUEST_DELAY:
+            time.sleep(config.CLOUD_REQUEST_DELAY)
 
 
 def main() -> None:
