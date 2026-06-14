@@ -1,0 +1,36 @@
+{
+  "_descripcion": "Prompts controlados para el benchmark de LLMs. Cada caso ejercita una capacidad distinta relevante para un agente virtual: razonamiento, seguimiento de instrucciones, formato estructurado y conocimiento de dominio. El campo 'system' fija la persona del agente para evaluar tambien la inyeccion de System Prompt (dimension de customizacion).",
+  "system_prompt": "Eres 'Aurora', un agente virtual asistente de la Universidad de Costa Rica. Respondes en espanol, de forma concisa, profesional y cordial. Si no sabes algo, lo admites.",
+  "casos": [
+    {
+      "id": "razonamiento_logico",
+      "tipo": "razonamiento",
+      "prompt": "Un estudiante tiene 3 cursos. El primero dura el doble que el segundo y el tercero dura 1 hora menos que el primero. Si el segundo curso dura 1.5 horas, cuanto suman en total los tres cursos? Explica el calculo paso a paso.",
+      "max_tokens": 300
+    },
+    {
+      "id": "seguimiento_instrucciones",
+      "tipo": "instrucciones",
+      "prompt": "Resume el siguiente texto en exactamente 3 vinetas, cada una de maximo 12 palabras: 'El benchmarking de servicios cognitivos permite seleccionar arquitecturas robustas evaluando latencia, costo, precision, privacidad, customizacion e integracion antes de comprometer el desarrollo de un agente virtual.'",
+      "max_tokens": 200
+    },
+    {
+      "id": "salida_estructurada_json",
+      "tipo": "formato",
+      "prompt": "Devuelve UNICAMENTE un objeto JSON valido con las claves 'intencion' (string) y 'entidades' (lista de strings) para la frase del usuario: 'Quiero matricular el curso de bases de datos el proximo martes'. No agregues texto adicional.",
+      "max_tokens": 150
+    },
+    {
+      "id": "conocimiento_dominio",
+      "tipo": "conocimiento",
+      "prompt": "Explica en un parrafo breve la diferencia entre latencia al primer token (TTFT) y latencia total de respuesta en un modelo de lenguaje, y por que importa la distincion en una conversacion por voz.",
+      "max_tokens": 250
+    },
+    {
+      "id": "robustez_idioma",
+      "tipo": "multilingue",
+      "prompt": "Traduce al ingles la siguiente frase y luego corrigela si tiene errores: 'El agente virtual responder muy rapido pero a veces el comprension falla'.",
+      "max_tokens": 200
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+# === Credenciales y entorno (NUNCA subir) ===
+.env
+.env.local
+*.key
+*.pem
+secrets/
+
+# === Entornos virtuales ===
+.venv/
+venv/
+env/
+ENV/
+
+# === Resultados crudos y artefactos pesados ===
+results/*.csv
+results/*.json
+results/raw/
+report/figures/*.png
+report/*.pdf
+
+# Audios generados / de prueba (pesados)
+data/audio/*.wav
+data/audio/*.mp3
+data/audio/*.flac
+tts_output/
+
+# Modelos descargados localmente (pesados)
+models/
+*.gguf
+*.bin
+*.onnx
+*.pt
+*.pth
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# === Sistema operativo / editor ===
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Mantener carpetas vacías versionadas
+!results/.gitkeep
+!data/audio/.gitkeep
+!report/figures/.gitkeep

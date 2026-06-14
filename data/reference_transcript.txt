@@ -1,0 +1,1 @@
+El agente virtual inteligente debe comprender la voz del usuario con precisión, razonar sobre la consulta y responder con una voz natural en tiempo real. La evaluación de estos servicios cognitivos es fundamental para garantizar una experiencia fluida y confiable.

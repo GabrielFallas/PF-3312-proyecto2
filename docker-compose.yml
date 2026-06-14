@@ -1,0 +1,80 @@
+# ============================================================
+#  docker-compose.yml - Banco de pruebas PF-3312
+#
+#  Dos servicios:
+#   - ollama     : servidor de LLMs locales (expone API en :11434)
+#   - benchmark  : la aplicacion Python que ejecuta las pruebas
+#
+#  Uso tipico:
+#     docker compose up -d ollama                 # levanta Ollama
+#     docker compose run --rm ollama-pull         # descarga los modelos
+#     docker compose run --rm benchmark           # corre el banco completo
+#
+#  Para GPU NVIDIA, descomenta el bloque 'deploy' del servicio ollama
+#  (requiere nvidia-container-toolkit instalado en el host).
+# ============================================================
+services:
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: pf3312-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama        # persiste los modelos descargados
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    # --- Descomenta para usar GPU NVIDIA ---
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # Servicio auxiliar de un solo uso para descargar los 5 LLMs del benchmark.
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: pf3312-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama pull llama3.1:8b &&
+       ollama pull mistral:7b &&
+       ollama pull phi3.5 &&
+       ollama pull gemma2:9b &&
+       ollama pull qwen2.5:7b"
+    restart: "no"
+
+  benchmark:
+    build: .
+    container_name: pf3312-benchmark
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - N_RUNS=5
+      - RESULTS_DIR=results
+    volumes:
+      # Monta carpetas para que los resultados/figuras/audios queden en el host.
+      - ./results:/app/results
+      - ./report:/app/report
+      - ./data:/app/data
+      - ./tts_output:/app/tts_output
+      - ./models:/app/models
+    # Sobrescribe el comando para correr solo una etapa, p.ej.:
+    #   docker compose run --rm benchmark benchmarks/llm_benchmark.py
+    restart: "no"
+
+volumes:
+  ollama_models:

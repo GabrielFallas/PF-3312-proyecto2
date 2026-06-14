@@ -1,0 +1,25 @@
+# Contexto de build minimo: no copiar artefactos pesados ni secretos.
+.env
+.git
+.gitignore
+.venv/
+venv/
+__pycache__/
+*.pyc
+results/*.csv
+results/*.json
+results/raw/
+tts_output/
+models/
+report/*.pdf
+report/figures/*.png
+data/audio/*.wav
+data/audio/*.mp3
+*.gguf
+*.onnx
+*.pt
+*.bin
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

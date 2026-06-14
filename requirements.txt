@@ -1,0 +1,36 @@
+# ============================================================
+#  Dependencias del banco de pruebas (Proyecto 2 - PF-3312)
+#  Todas las librerias son de codigo abierto / gratuitas.
+#  Instalar dentro de un entorno virtual (ver README.md).
+# ============================================================
+
+# --- Nucleo ---
+requests>=2.31           # cliente HTTP para la API local de Ollama
+python-dotenv>=1.0        # carga de variables de entorno desde .env
+pandas>=2.0               # consolidacion de resultados / tablas
+matplotlib>=3.7           # graficos latencia vs costo/calidad
+numpy>=1.24
+
+# --- Metricas de calidad ---
+jiwer>=3.0                # Word Error Rate (WER) para STT
+
+# --- STT (Speech-to-Text) locales ---
+faster-whisper>=1.0       # Whisper optimizado con CTranslate2
+openai-whisper>=20231117  # implementacion de referencia de Whisper
+vosk>=0.3.45              # reconocimiento offline ligero (Kaldi)
+# wav2vec2 se ejecuta via transformers + torch (abajo)
+
+# --- TTS (Text-to-Speech) locales ---
+piper-tts>=1.2            # TTS neuronal rapido (ONNX)
+# Coqui TTS (XTTS v2), Bark y Kokoro son pesados; instalar segun se necesite:
+# TTS>=0.22               # Coqui (XTTS v2) -- descomenta si lo usas
+# kokoro>=0.3             # Kokoro TTS      -- descomenta si lo usas
+# espeak-ng se instala a nivel de sistema (apt/choco), no via pip
+
+# --- Backend de deep learning (Whisper, wav2vec2, XTTS, Bark) ---
+# Para GPU NVIDIA instala el wheel CUDA correspondiente desde pytorch.org
+torch>=2.1
+torchaudio>=2.1
+transformers>=4.40        # wav2vec2 y otros modelos de HuggingFace
+soundfile>=0.12           # lectura/escritura de WAV
+librosa>=0.10             # carga y resampleo de audio
