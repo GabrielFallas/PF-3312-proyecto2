@@ -198,13 +198,20 @@ El reporte se escribe en Markdown (`report/reporte_tecnico.md`) e incorpora las
 tablas/figuras generadas por `analysis/build_report_data.py`.
 
 ```bash
-# Requiere Pandoc y un motor LaTeX (TeX Live / MiKTeX) para PDF.
 cd report
+# Opcion A (recomendada si tienes LaTeX: TeX Live / MiKTeX):
 pandoc reporte_tecnico.md -o reporte_tecnico.pdf \
-  --pdf-engine=xelatex \
-  --toc --number-sections \
+  --pdf-engine=xelatex --toc --number-sections \
   -V geometry:margin=2.5cm -V lang=es -V mainfont="Calibri"
+
+# Opcion B (sin LaTeX): generar HTML autocontenido y exportarlo a PDF
+# desde el navegador (Ctrl+P -> Guardar como PDF). Ya se incluye generado:
+pandoc reporte_tecnico.md -o reporte_tecnico.html -s --toc \
+  --number-sections --embed-resources
 ```
+
+> Se incluye `report/reporte_tecnico.html` ya renderizado (con las figuras
+> embebidas) listo para revisar o exportar a PDF sin instalar nada.
 
 Los diagramas Mermaid (`pipeline_diagram.md`) se renderizan en GitHub o se
 exportan a PNG con `mermaid-cli` (`mmdc`) para incrustarlos en el PDF.
