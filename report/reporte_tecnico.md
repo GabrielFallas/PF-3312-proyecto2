@@ -17,16 +17,16 @@ geometry: margin=2.5cm
 El desarrollo de un agente virtual interactivo capaz de conversar por voz exige
 seleccionar una arquitectura de servicios cognitivos que equilibre desempeño,
 costo, privacidad y facilidad de integración. La elección no puede sustentarse
-en la popularidad comercial de una API ni en el tamaño nominal de un modelo:
-requiere **evidencia empírica** recolectada bajo condiciones controladas y
+en la popularidad comercial de una API ni en el tamaño nominal de un modelo, sino que
+requiere evidencia empírica recolectada bajo condiciones controladas y
 reproducibles.
 
-Este reporte documenta el diseño, la ejecución y el análisis de un banco de
-pruebas (*benchmarking*) sobre **veinte servicios** distribuidos en tres
+Este documento incluye el diseño, la ejecución y el análisis de un banco de
+pruebas o *benchmarking* sobre veinte servicios distribuidos en tres
 categorías que componen el *pipeline* de comunicación del agente: modelos de
 lenguaje (LLM), reconocimiento de voz (*Speech-to-Text*, STT) y síntesis de voz
-(*Text-to-Speech*, TTS). La muestra mantiene el **balance representativo** que
-exige el enunciado, combinando en cada categoría tres tipos de proveedor:
+(*Text-to-Speech*, TTS). La muestra mantiene el balance representativo exigido,
+combinando en cada categoría tres tipos de proveedor:
 
 1. **Modelos comerciales de alta gama en la nube** (p. ej. Gemini 2.5 Pro,
    gpt-oss-120B y Llama 4 Scout servidos en Groq, Deepgram nova-2, AssemblyAI,
@@ -39,25 +39,25 @@ exige el enunciado, combinando en cada categoría tres tipos de proveedor:
    Vosk; Piper).
 
 Para no incurrir en costos, los servicios en la nube se consumen a través de sus
-**capas gratuitas (*free tier*)**. Esta combinación permite contrastar de forma
-empírica los compromisos entre **desempeño en la nube** y **soberanía de datos
-local**, dos extremos relevantes para un agente institucional. Todo el banco de
-pruebas es **reproducible** en una máquina limpia mediante contenedores Docker.
+capas gratuitas. Esta combinación permite contrastar de forma
+empírica los compromisos entre desempeño en la nube y soberanía local, 
+dos extremos relevantes para un agente virtual. Todo el banco de
+pruebas es reproducible en una máquina limpia mediante contenedores Docker.
 
 ## Objetivos específicos
 
-1. Medir empíricamente la **latencia** (TTFT y latencia total en LLM; factor de
+1. Medir empíricamente la latencia (TTFT y latencia total en LLM; factor de
    tiempo real —RTF— y tiempo de procesamiento en STT/TTS) de cada servicio,
    promediando al menos cinco ejecuciones limpias.
-2. Cuantificar la **precisión/calidad**: *Word Error Rate* (WER) en STT,
+2. Cuantificar la precisión/calidad: *Word Error Rate* (WER) en STT,
    seguimiento de instrucciones en LLM y naturalidad cualitativa en TTS.
-3. Analizar **costo y escalabilidad**: para los servicios en la nube, el costo
+3. Analizar costo y escalabilidad: para los servicios en la nube, el costo
    por millón de tokens (LLM), por minuto de audio (STT) y por carácter (TTS)
    más allá de la capa gratuita; para los locales, la infraestructura física
    requerida (VRAM, RAM, consumo energético).
-4. Evaluar **privacidad/gobernanza**, **customización** e **integración** de
+4. Evaluar privacidad/gobernanza, customización e integración de
    cada alternativa.
-5. Proponer **combinaciones arquitectónicas óptimas** para distintos escenarios
+5. Proponer combinaciones arquitectónicas óptimas para distintos escenarios
    de uso, fundamentadas en los datos obtenidos.
 
 \newpage
@@ -70,11 +70,11 @@ este trabajo. Esta sección sitúa el proyecto en ese contexto.
 
 ## Métricas de latencia en LLM
 
-La literatura de *serving* de modelos de lenguaje ha consolidado el **Time To
-First Token (TTFT)** como la métrica primordial de responsividad percibida: mide
+La literatura de *LLM inference serving* de modelos de lenguaje ha consolidado el **Time To
+First Token (TTFT)** como la métrica primordial de responsividad percibida, en dondo se mide
 el tiempo entre la recepción del *prompt* y la emisión del primer token, y
 refleja la fase de *prefill* del modelo [1, 2]. Estudios como *LLM-Inference-Bench*
-[1] y los trabajos sobre meta-métricas y evaluación de sistemas de *serving*
+[1] y los trabajos sobre meta-métricas y evaluación de sistemas de *LLM inference serving*
 [2, 3] subrayan que, en aplicaciones interactivas, el TTFT y la *Inter-Token
 Latency* (ITL, o su inverso, tokens/seg) son más informativos que la latencia
 total agregada, porque determinan la sensación de inmediatez. Este proyecto
@@ -86,7 +86,7 @@ proveedores.
 
 El modelo *Whisper* [4], entrenado con supervisión débil a gran escala, fijó el
 estándar de referencia para reconocimiento multilingüe y popularizó el uso del
-**Word Error Rate (WER)** sobre corpus como Common Voice y FLEURS. Trabajos
+*Word Error Rate (WER)* sobre corpus como Common Voice y FLEURS. Trabajos
 posteriores como *MMS* (*Scaling Speech Technology to 1,000+ Languages*) [5]
 muestran que el WER varía drásticamente según el idioma y la calidad del audio,
 y advierten que el desempeño sobre datos reales con ruido es notablemente peor
@@ -101,7 +101,7 @@ La calidad de un sistema TTS se evalúa tradicionalmente con el **Mean Opinion
 Score (MOS)**, una valoración subjetiva en escala 1–5 recopilada de múltiples
 oyentes; conjuntos como *SOMOS* [6] y objetivos como *NaturalSpeech* [7] formalizan
 este protocolo y la meta de "calidad a nivel humano". Para la eficiencia se usa
-el **Real-Time Factor (RTF)**, definido como el cociente entre el tiempo de
+el *Real-Time Factor (RTF)*, definido como el cociente entre el tiempo de
 síntesis y la duración del audio producido; un RTF < 1 indica síntesis más rápida
 que el tiempo real [8]. Dado que un MOS riguroso requiere un panel de oyentes
 fuera del alcance de este proyecto individual, aquí se reporta una **valoración
@@ -110,13 +110,13 @@ práctica de los estudios de responsividad de TTS de código abierto [8].
 
 ## Arquitecturas de agentes de voz en tiempo real
 
-La industria converge en el patrón encadenado **STT → LLM → TTS** como base de
+La industria converge en el patrón encadenado STT → LLM → TTS como base de
 los agentes de voz [9]. La literatura aplicada coincide en que la conversación
-humana opera en una ventana de respuesta de **300–500 ms**, y que retardos
-superiores a **500–700 ms** comienzan a percibirse como antinaturales [9]. Un
+humana opera en una ventana de respuesta de 300–500 ms, y que retardos
+superiores a 500–700 ms comienzan a percibirse como antinaturales [9]. Un
 *pipeline* secuencial ingenuo acumula 2–4 s de latencia; la solución es el
-**procesamiento en flujo (*streaming*)**: transcripción parcial incremental,
-consumo del LLM token a token y **síntesis incremental** de frases conforme se
+procesamiento en flujo (*streaming*): transcripción parcial incremental,
+consumo del LLM token a token y síntesis incremental de frases conforme se
 generan, solapando etapas. Estas referencias fundamentan las decisiones de
 diseño del *pipeline* propuesto en §5 y los umbrales con que se interpretan los
 resultados de latencia.
@@ -147,11 +147,11 @@ Los benchmarks se ejecutaron sobre el siguiente entorno real:
 | RAM | 32 GB |
 | Sistema operativo | Windows 11 Pro |
 | Runtime de contenedores | Docker Engine 29.5.2 + Compose v2 |
-| Servidor LLM local | Ollama (`ollama/ollama:latest`) con aceleración **GPU** (CUDA) |
-| STT/TTS locales | Python 3.12 en `venv`, ejecución en **CPU** (`int8`) |
+| Servidor LLM local | Ollama (`ollama/ollama:latest`) con aceleración GPU (CUDA) |
+| STT/TTS locales | Python 3.12 en `venv`, ejecución en CPU (`int8`) |
 | Red | Servicios en la nube consumidos por API REST desde la misma máquina |
 
-Todo el banco de pruebas se ejecuta de forma **contenerizada**: un contenedor
+Todo el banco de pruebas se ejecuta de forma contenerizada: un contenedor
 sirve los LLM (Ollama, con paso de GPU mediante el *runtime* `nvidia`) y otro
 ejecuta los scripts de medición, comunicándose por la red interna de Docker
 Compose. Esto elimina diferencias de entorno y permite reconstruir el experimento
@@ -159,9 +159,9 @@ con tres comandos (ver `README.md`).
 
 ## Servicios evaluados (20 servicios; balance de tres tipos)
 
-La muestra cumple el **balance representativo** exigido por el enunciado y supera
+La muestra cumple el balance representativo exigido por el enunciado y supera
 el mínimo de 5 servicios por categoría. Para mantener el costo en cero, los
-servicios en la nube se consumen mediante su **capa gratuita (*free tier*)**.
+servicios en la nube se consumen mediante su capa gratuita (*free tier*).
 
 | Categoría | Nube — alta gama | Nube — bajo costo/rápido | Local — offline |
 |-----------|------------------|--------------------------|-----------------|
@@ -174,7 +174,7 @@ servicios en la nube se consumen mediante su **capa gratuita (*free tier*)**.
 gama alta, pero **su capa gratuita devuelve sistemáticamente HTTP 429
 (*Too Many Requests*) desde la primera petición**, incluso con tope de tokens y
 presupuesto de razonamiento mínimo (`thinkingBudget = 128`). En la práctica,
-Gemini 2.5 Pro **no es utilizable sin facturación activa**, lo que constituye en
+Gemini 2.5 Pro no es utilizable sin facturación activa, lo que constituye en
 sí mismo un dato relevante de viabilidad financiera. Por ello, el punto de
 referencia empírico de "alta gama en la nube" lo aportan **gpt-oss-120B (120 B,
 pesos abiertos de OpenAI)** y **Llama 4 Scout**, modelos *flagship* servidos sobre
@@ -184,11 +184,11 @@ la LPU de Groq con *free tier* real.
 tier* más generoso, se sitúa entre la alta gama y el bajo costo; se reporta como
 alta gama por capacidad de razonamiento y como contraste de latencia.
 
-Se descartan **OpenAI, Anthropic y Azure** por carecer de un acceso gratuito
+Se descartan OpenAI, Anthropic y Azure por carecer de un acceso gratuito
 práctico para este ejercicio. Cada servicio en la nube se activa únicamente si su
 API key está configurada en `.env`, y su validez y modelos vigentes se verifican
 con la herramienta de *preflight* (`tools/check_services.py`) mediante endpoints
-de solo lectura, **sin consumir cuota de uso**. Los scripts soportan además otros
+de solo lectura, sin consumir cuota de uso. Los scripts soportan además otros
 motores locales (openai-whisper, whisper.cpp, wav2vec2; Coqui XTTS v2, Kokoro,
 eSpeak-NG, Bark) reproducibles con un comando.
 
@@ -202,29 +202,28 @@ eSpeak-NG, Bark) reproducibles con un comando.
   su transcripción de referencia (`data/reference_transcript.txt`) para el cálculo
   de WER. El audio se generó de forma reproducible sintetizando la referencia con
   un TTS neuronal de alta calidad (ElevenLabs, vía `tools/make_test_audio.py`),
-  garantizando una correspondencia exacta texto–audio. **Implicación
-  metodológica:** al ser voz sintética limpia (sin ruido ni acentos espontáneos),
+  garantizando una correspondencia exacta texto–audio. Implicación
+  metodológica: al ser voz sintética limpia (sin ruido ni acentos espontáneos),
   los motores STT de buena calidad alcanzan un WER cercano a 0 %, por lo que en
-  este material la diferenciación se da principalmente en la **latencia**; un
+  este material la diferenciación se da principalmente en la latencia; un
   audio real con ruido ambiental ampliaría las diferencias de WER, en línea con
   lo reportado por la literatura [5] (ver Recomendaciones y trabajo futuro).
 - **TTS** — un párrafo representativo del dominio (`data/tts_text_es.txt`).
 
 ## Herramientas y protocolo de medición
 
-- **Cronometraje:** `time.perf_counter()` (reloj monótono de alta resolución). En
-  LLM se consume la API en modo *streaming*: el primer fragmento con contenido
-  marca el **TTFT** y el evento de cierre delimita la latencia total; se registra
-  además `tokens/seg`.
-- **Calidad:** WER con la librería `jiwer` (con respaldo propio de Levenshtein por
-  palabras) sobre texto normalizado; **RTF = tiempo de procesamiento / duración
-  del audio** para STT y TTS.
-- **Repeticiones:** `N_RUNS = 5` ejecuciones por prueba **más una corrida de
-  calentamiento que se descarta** (mitiga el sesgo de carga inicial de modelo y
-  cachés). Temperatura del LLM fijada en `0.0` para reproducibilidad.
+- **Cronometraje:** se hace uso de `time.perf_counter()`el cual forma parte de las 
+  primitivas de medicion de tiempo de alta resolucion. Se consume la API del LLM 
+  en modo *streaming*: el primer fragmento con contenido marca el **TTFT** y el 
+  evento de cierre delimita la latencia total; se registra además `tokens/seg`.
+- **Calidad:** WER con la librería `jiwer` se pone a prueba la calidad del texto
+  normalizado; **RTF = tiempo de procesamiento / duración del audio** para STT y TTS.
+- **Repeticiones:** `N_RUNS = 5` ejecuciones por prueba más una corrida de
+  calentamiento que se descarta la cual mitiga el sesgo de carga inicial de modelo y
+  cachés. Temperatura del LLM fijada en `0.0` para reproducibilidad.
 - **Conservación de cuota:** los servicios en la nube aplican un tope de tokens de
   salida (`CLOUD_MAX_OUTPUT_TOKENS`) y una pausa entre peticiones
-  (`CLOUD_REQUEST_DELAY`) que **no afecta la medición** (se aplica tras cronometrar
+  (`CLOUD_REQUEST_DELAY`) que no afecta la medición (se aplica tras cronometrar
   cada corrida), para no agotar las capas gratuitas.
 - **Persistencia y seguridad:** cada ejecución se anexa a `results/*.csv` (formato
   largo). Una rutina de redacción (`common/persistence.redact`) enmascara
@@ -234,11 +233,11 @@ eSpeak-NG, Bark) reproducibles con un comando.
 
 ## Fichas técnicas y costos de referencia a escala
 
-El uso experimental de este proyecto es de **costo cero** (capas gratuitas y
-modelos locales). No obstante, la decisión arquitectónica exige proyectar el
-**costo a escala** una vez superada la capa gratuita. La siguiente tabla resume
+El uso experimental de este proyecto es de costo cero mediante capas gratuitas y
+modelos locales. No obstante, la decisión arquitectónica exige proyectar el
+costo a escala una vez superada la capa gratuita. La siguiente tabla resume
 el precio de lista de cada servicio en la nube y el requisito de infraestructura
-de cada opción local. Cifras en USD, **junio 2026**, capa gratuita aparte y
+de cada opción local. Cifras en USD, junio 2026, capa gratuita aparte y
 sujetas a cambios del proveedor (fuentes [11]–[14]).
 
 | Servicio | Tipo | Unidad de costo | Precio de lista (jun. 2026) |
@@ -275,7 +274,7 @@ y Piper local lo lleva a cero. Estas cifras fundamentan las recomendaciones (§6
 
 # Análisis Comparativo por Categoría
 
-Todas las cifras de esta sección son **empíricas**, medidas con los scripts del
+Todas las cifras de esta sección son empíricas, medidas con los scripts del
 repositorio (promedio de 5 corridas, descartando una de calentamiento) y
 consolidadas con `analysis/build_report_data.py`. Las tablas detalladas
 (media ± desviación estándar) están en `report/tablas_generadas.md`.
@@ -309,13 +308,13 @@ medidos en el entorno descrito (LLM locales en GPU RTX 5070 Ti; nube vía free t
 
 - **El TTFT local en GPU es de otro orden de magnitud.** Los modelos locales
   (Phi-3.5 y Mistral con TTFT ≈ 0,03 s; Llama/Gemma/Qwen ≈ 0,09–0,11 s) responden
-  el primer token **10–50× más rápido** que Gemini 2.5 Flash (1,79 s), porque
-  evitan el viaje de red. Para una conversación por voz —donde el TTFT define la
-  sensación de inmediatez [1, 9]— esto es decisivo: los locales se ubican dentro
+  el primer token 10–50× más rápido que Gemini 2.5 Flash (1,79 s), porque
+  evitan el viaje de red. Para una conversación por voz donde el TTFT define la
+  sensación de inmediatez [1, 9], esto es decisivo: los locales se ubican dentro
   de la ventana conversacional de 300–500 ms, mientras Gemini Flash la excede.
 - **La alta gama accesible en la nube es muy competitiva en velocidad.**
-  gpt-oss-120B alcanzó **196 tok/s** —la mayor velocidad de generación de toda la
-  muestra en la nube, superando incluso a varios locales— gracias a la LPU de
+  gpt-oss-120B alcanzó 196 tok/s, siendo la mayor velocidad de generación de toda la
+  muestra en la nube, superando incluso a varios locales. Esto gracias a la LPU de
   Groq, con TTFT de 0,66 s. Llama 4 Scout (111 tok/s) y Groq Llama 3.3 70B (140
   tok/s) confirman que la LPU compensa parcialmente la latencia de red. Aun así,
   su TTFT (0,6–0,7 s) sigue siendo ~6–20× mayor que el de un modelo local en GPU.
@@ -323,11 +322,11 @@ medidos en el entorno descrito (LLM locales en GPU RTX 5070 Ti; nube vía free t
   pago.** Su capa gratuita devolvió HTTP 429 en todas las pruebas; el dato es
   relevante para la decisión arquitectónica: la máxima gama propietaria implica
   costo financiero ineludible y dependencia de facturación.
-- **Velocidad de generación local:** Phi-3.5 lidera con **257 tok/s**, seguido de
+- **Velocidad de generación local:** Phi-3.5 lidera con 257 tok/s, seguido de
   Qwen 2.5 (155), Mistral (150) y Llama 3.1 (142). Gemini 2.5 Flash resultó el más
   lento (20 tok/s), comportándose como un modelo de mayor "deliberación".
 - **Trade-off nube vs local:** con una GPU de gama media (RTX 5070 Ti, 16 GB) los
-  modelos locales **igualan o superan** a las APIs en la nube en latencia, a costo
+  modelos locales igualan o superan a las APIs en la nube en latencia, a costo
   cero y con privacidad total. La nube aporta valor cuando no se dispone de GPU
   (gpt-oss-120B, Groq y Flash-Lite siguen siendo muy rápidos) o cuando se requiere
   la máxima calidad de razonamiento de un *flagship* propietario.
@@ -356,7 +355,7 @@ Motores locales en CPU._
 ### Hallazgos
 
 - **WER ≈ 0 % en todos los motores** sobre el audio sintético limpio, por lo que
-  la diferenciación práctica se dio en la **latencia** (ver nota metodológica y
+  la diferenciación práctica se dio en la latencia (ver nota metodológica y
   [5]). Sobre audio real con ruido, la literatura predice que aparecerían brechas
   de WER, favorables a Whisper large-v3 y a los motores de la nube de alta gama.
 - **Los motores locales en CPU fueron los más rápidos:** faster-whisper (0,91 s,
@@ -395,8 +394,7 @@ corridas. Motores locales en CPU._
   contrario a su perfil "rápido" en inglés; su voz española aún es menos madura.
 - **Naturalidad (valoración cualitativa, audios en `tts_output/`):** ElevenLabs >
   Piper > Deepgram Aura(es), en una escucha informal; ElevenLabs suena claramente
-  más natural, Piper es muy inteligible con prosodia algo más plana. Una
-  evaluación MOS formal con panel de oyentes [6, 7] queda como trabajo futuro.
+  más natural, Piper es muy inteligible con prosodia algo más plana. 
 
 ## Síntesis transversal de las dimensiones 3–6
 
@@ -407,7 +405,7 @@ cuatro dimensiones restantes determinan la viabilidad real de cada servicio.
 La tabla de costos (§3, "Fichas técnicas") cuantifica el compromiso: a volumen
 bajo, la nube es gratis (free tier) y sin inversión; a volumen alto, el costo
 marginal por token/minuto/carácter crece de forma lineal, mientras que el costo
-local es **fijo** (la GPU/CPU ya adquirida) y marginalmente nulo. El punto de
+local es fijo (la GPU/CPU ya adquirida) y marginalmente nulo. El punto de
 equilibrio depende del tráfico esperado del agente: para un asistente
 institucional de uso intensivo y continuo, la solución local amortiza el
 hardware rápidamente; para picos esporádicos, la nube evita inmovilizar capital.
@@ -415,30 +413,30 @@ hardware rápidamente; para picos esporádicos, la nube evita inmovilizar capita
 ### Dimensión 4 — Privacidad y gobernanza
 Existe una frontera nítida entre las opciones **local** y **nube**:
 
-- **Local (Ollama, faster-whisper, Vosk, Piper):** los datos **nunca abandonan
-  la máquina**. Aislamiento absoluto, apto para información sensible y para
+- **Local (Ollama, faster-whisper, Vosk, Piper):** los datos nunca abandonan
+  la máquina. Aislamiento absoluto, apto para información sensible y para
   cumplir normativas de soberanía de datos sin cláusulas contractuales.
 - **Nube:** los datos transitan a un tercero. Las políticas difieren de forma
   relevante: el *free tier* de **Google AI Studio** (Gemini) advierte que puede
-  **usar las entradas para mejorar sus modelos**, mientras que la vía de pago
+  usar las entradas para mejorar sus modelos, mientras que la vía de pago
   (Vertex AI) ofrece no-entrenamiento contractual; **Groq, Deepgram, AssemblyAI y
   ElevenLabs** declaran no entrenar con los datos de la API en sus planes de pago,
   pero el tratamiento en capas gratuitas puede variar. Para un agente que maneje
-  datos personales, esto **descarta el free tier** de proveedores que entrenan
+  datos personales, esto descarta el free tier de proveedores que entrenan
   con las entradas y favorece la vía local o un plan de pago con garantía de
   aislamiento. Es la dimensión donde local y nube se ubican en extremos opuestos.
 
 ### Dimensión 5 — Customización y flexibilidad
 - **LLM:** todos permiten inyectar *System Prompts* sofisticados (lo aprovechamos
-  con la persona "Aurora"). Los locales añaden **fine-tuning** y cuantización
+  con el agente virtual "Aurora", usado como prueba). Los locales añaden *fine-tuning* y cuantización
   GGUF propios; en la nube, Gemini y los modelos OpenAI-compatibles exponen
   *tools*/*function calling* y salida JSON forzada (Qwen 2.5 destacó localmente en
   soporte de herramientas).
 - **STT:** Deepgram y AssemblyAI ofrecen *keywords*/*word boost* y diarización;
   Vosk admite gramáticas/vocabulario restringido; faster-whisper acepta
   `initial_prompt` para sesgar el dominio léxico.
-- **TTS:** ElevenLabs lidera con **clonación de voz** y control de estilo —clave
-  para dar identidad sonora al agente—; Coqui XTTS v2 ofrece clonación local; Piper
+- **TTS:** ElevenLabs lidera con clonación de voz y control de estilo, lo cual es clave
+  para dar identidad sonora al agente; Coqui XTTS v2 ofrece clonación local; Piper
   se limita a voces preentrenadas. La identidad de voz es, por tanto, un factor que
   puede inclinar la decisión hacia ElevenLabs (nube) o XTTS (local con GPU).
 
@@ -470,7 +468,7 @@ UML, más la descripción conceptual paso a paso— se documenta en
 
 El *pipeline* integra las tres categorías evaluadas: **Unity (captura de audio)
 → STT → LLM → TTS → Unity (reproducción)**, orquestado por un servidor local.
-Las decisiones de diseño orientadas a **minimizar la latencia percibida**, y
+Las decisiones de diseño orientadas a minimizar la latencia percibida, y
 respaldadas por los datos de §4 y la literatura [9], son:
 
 1. **Transporte por WebSocket full-dúplex** entre Unity y el orquestador, para
@@ -486,15 +484,15 @@ El banco de pruebas mide de forma aislada las etapas STT, LLM y TTS para
 fundamentar empíricamente qué combinación minimiza la latencia total del
 *pipeline*. Sumando los mejores tiempos locales medidos (faster-whisper 0,91 s +
 TTFT de Phi-3.5 0,03 s + primera frase de Piper ≈ 0,3 s) se obtiene una latencia
-percibida de **primer audio** muy inferior a 1,5 s sin salir de la máquina, lo que
+percibida de primer audio muy inferior a 1,5 s sin salir de la máquina, lo que
 valida la viabilidad de un agente privado y responsivo.
 
 \newpage
 
 # Recomendaciones según Contexto y Conclusión
 
-Las siguientes recomendaciones contrastan **latencia y costo** frente a
-**privacidad y personalización**, fundamentadas en los datos empíricos de §4.
+Las siguientes recomendaciones contrastan latencia y costo frente a
+privacidad y personalización, fundamentadas en los datos empíricos de §4.
 
 ### Escenario A — Privacidad estricta y presupuesto cero (on-premise)
 Todo el *stack* local evaluado satisface por diseño la soberanía de datos.
@@ -512,15 +510,15 @@ de extremo a extremo, adecuado para kioscos o demos en hardware limitado.
 Cuando se dispone de GPU y la latencia no es crítica: **faster-whisper
 (`medium/large`) + Gemma 2 9B o Qwen 2.5 (LLM) + Coqui XTTS v2 (TTS con clonación
 de voz)**. Maximiza precisión de transcripción, calidad de razonamiento y
-naturalidad/identidad de voz del agente, **sin que los datos salgan de la
-institución**.
+naturalidad/identidad de voz del agente, sin que los datos salgan de la
+institución.
 
 ### Escenario D — Tiempo real en la nube, mínima latencia (sin GPU propia)
-Cuando la prioridad es la **latencia más baja posible sin hardware local** y se
+Cuando la prioridad es la latencia más baja posible sin hardware local y se
 acepta que los datos salgan a un tercero: **Deepgram nova-2 (STT) + gpt-oss-120B o
 Groq Llama 3.3 70B (LLM, alta velocidad en LPU) + ElevenLabs Flash v2.5 (TTS)**.
 Aprovecha la infraestructura del proveedor (free tier) para una experiencia muy
-fluida; gpt-oss-120B aporta calidad *flagship* a 196 tok/s. **Contrapartida:**
+fluida; gpt-oss-120B aporta calidad *flagship* a 196 tok/s. **Contraparte:**
 menor privacidad, dependencia de conectividad y de los límites de la capa gratuita.
 
 ### Escenario E — Máxima calidad de razonamiento propietario (presupuesto disponible)
@@ -532,20 +530,20 @@ justifica cuando la calidad de razonamiento prima sobre costo, latencia y privac
 
 ### Conclusión
 
-El estudio demuestra que existe un **espectro de arquitecturas viables** para un
-agente virtual por voz, desde una solución **100 % local, privada y de costo
-operativo nulo** (Ollama + Whisper local + Piper) hasta una **basada en la nube de
-mínima latencia** (gpt-oss-120B / Groq + Deepgram + ElevenLabs) sin hardware
+El estudio demuestra que existe un espectro de arquitecturas viables para un
+agente virtual por voz, desde una solución 100 % local, privada y de costo
+operativo nulo (Ollama + Whisper local + Piper) hasta una basada en la nube de
+mínima latencia (gpt-oss-120B / Groq + Deepgram + ElevenLabs) sin hardware
 propio. La selección óptima no es única: surge del balance que cada escenario
-exige entre **latencia, calidad, costo y privacidad**.
+exige entre latencia, calidad, costo y privacidad.
 
-El hallazgo central es que la **soberanía de datos y la calidad de experiencia se
-ubican en extremos de un mismo espacio de diseño**, pero la brecha es menor de lo
-que sugiere el marketing: una GPU de gama media iguala o supera a la nube en
+El hallazgo central es que la soberanía de datos y la calidad de experiencia se
+ubican en extremos de un mismo espacio de diseño, pero la brecha es menor de lo
+que sugiere el mercado: una GPU de gama media iguala o supera a la nube en
 latencia, y los *flagships* de pesos abiertos (gpt-oss-120B) ofrecen calidad de
 gama alta sin el costo ineludible del *flagship* propietario (Gemini 2.5 Pro, cuyo
 *free tier* resultó inviable). Los datos empíricos recolectados con este banco de
-pruebas —reproducible vía Docker— constituyen la base objetiva para la decisión
+pruebas constituyen la base objetiva para la decisión
 arquitectónica y para las fases posteriores del desarrollo del agente.
 
 \newpage
@@ -611,7 +609,3 @@ $0.05/1k car.). <https://elevenlabs.io/pricing>
 - **Tablas y figuras generadas:** `report/tablas_generadas.md`, `report/figures/`.
 - **Diagramas del pipeline:** `report/pipeline_diagram.md`.
 - **Reproducibilidad:** `README.md`, `Dockerfile`, `docker-compose.yml`.
-
-> _Recordatorio de calidad (rúbrica): revise la ortografía antes de exportar
-> (penalización de 0.25 pts por falta) y verifique que ninguna credencial ni
-> archivo `.env` se haya subido al repositorio._
