@@ -4,9 +4,9 @@ benchmarks/tts_benchmark.py
 Banco de pruebas para motores de Sintesis de Voz (TTS).
 
 Catalogo BALANCEADO (config.TTS_ENGINES):
-  - Nube alta gama   : ElevenLabs (multilingual v2), Azure TTS (es-CR)
-  - Nube bajo costo  : OpenAI tts-1
-  - Local offline    : Piper, Coqui XTTS v2, Kokoro, eSpeak-NG, Bark
+  - Nube alta gama   : ElevenLabs (multilingual v2)
+  - Nube bajo costo  : ElevenLabs Flash v2.5, Deepgram Aura 2 (es)
+  - Local offline    : Piper (es-ES, es-MX), Coqui XTTS v2, Kokoro, eSpeak-NG, Bark
 
 Para cada motor sintetiza un texto en espanol y mide latencia de sintesis,
 duracion del audio y RTF. Guarda el audio en tts_output/ para la valoracion
@@ -64,11 +64,20 @@ def audio_duration_s(path: Path) -> float:
 # --------------------------------------------------------------------------
 #  Adaptadores locales (offline). Firma: (text, out, spec) -> ruta de salida.
 # --------------------------------------------------------------------------
+def _piper_cmd() -> list[str]:
+    """Resuelve como invocar Piper de forma portable: usa el ejecutable `piper`
+    si esta en el PATH; si no, cae a `python -m piper` (siempre disponible cuando
+    el paquete piper-tts esta instalado, sin depender del PATH)."""
+    import shutil
+    exe = shutil.which("piper")
+    return [exe] if exe else [sys.executable, "-m", "piper"]
+
+
 def tts_piper(text: str, out: Path, spec: dict) -> Path:
     voice = spec.get("voice")
     if not voice or not Path(voice).exists():
         raise RuntimeError(f"Voz Piper no encontrada en '{voice}' (ver .env)")
-    proc = subprocess.run(["piper", "--model", voice, "--output_file", str(out)],
+    proc = subprocess.run(_piper_cmd() + ["--model", voice, "--output_file", str(out)],
                           input=text, text=True, capture_output=True, timeout=300)
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr[:200])

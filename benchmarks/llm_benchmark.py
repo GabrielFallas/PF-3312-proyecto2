@@ -4,8 +4,9 @@ benchmarks/llm_benchmark.py
 Banco de pruebas para Modelos de Lenguaje (LLM).
 
 Evalua un catalogo BALANCEADO (config.LLM_SERVICES) que combina:
-  - Nube alta gama   : Gemini 1.5 Pro, GPT-4o
-  - Nube bajo costo  : Groq (Llama 3.3 70B, OpenAI-compatible)
+  - Nube alta gama   : Gemini 2.5 Pro (free tier devuelve 429), gpt-oss-120B y
+                       Llama 4 Scout (Groq)
+  - Nube bajo costo  : Gemini 2.5 Flash/Flash-Lite, Groq Llama 3.3 70B
   - Local offline    : Llama/Mistral/Phi/Gemma/Qwen via Ollama
 
 Mide, para cada modelo y prompt controlado, en modo *streaming*:
@@ -17,7 +18,7 @@ de calentamiento) y persiste cada ejecucion en results/llm_results.csv.
 
 Uso:
     python -m benchmarks.llm_benchmark
-    python -m benchmarks.llm_benchmark --services Gemini-1.5-Pro Phi-3.5-local
+    python -m benchmarks.llm_benchmark --services Groq-GPT-OSS-120B Phi-3.5-local
     python -m benchmarks.llm_benchmark --only-local
     python -m benchmarks.llm_benchmark --runs 5
 """

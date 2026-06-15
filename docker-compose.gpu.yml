@@ -1,0 +1,24 @@
+# ============================================================
+#  docker-compose.gpu.yml  —  OVERRIDE opcional para GPU NVIDIA
+#
+#  Habilita la aceleracion por GPU del servidor Ollama. Es OPCIONAL: el
+#  compose base (docker-compose.yml) corre en cualquier equipo solo con CPU.
+#
+#  Requisitos en el host:
+#    - GPU NVIDIA con drivers actualizados
+#    - nvidia-container-toolkit instalado (https://docs.nvidia.com/datacenter/
+#      cloud-native/container-toolkit/latest/install-guide.html)
+#
+#  Uso (combina base + override en cada comando):
+#    docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
+#    docker compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm benchmark
+# ============================================================
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

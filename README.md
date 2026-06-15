@@ -56,7 +56,8 @@ Dimensiones medidas: **latencia** (TTFT/total, RTF), **precisión/calidad**
 
 ```
 benchmarking-ia/
-├── docker-compose.yml        # Ollama + app de benchmarking
+├── docker-compose.yml        # Ollama + app de benchmarking (CPU, corre en cualquier equipo)
+├── docker-compose.gpu.yml    # override OPCIONAL para GPU NVIDIA
 ├── Dockerfile                # imagen de la app
 ├── config.py                 # catálogo de servicios y parámetros
 ├── run_all.py                # orquestador (corre todo + consolida)
@@ -64,28 +65,41 @@ benchmarking-ia/
 ├── .env.example              # plantilla (copiar a .env)
 ├── common/                   # timer (TTFT/latencia), métricas (WER/RTF), persistencia
 ├── benchmarks/               # llm_benchmark · stt_benchmark · tts_benchmark
-├── data/                     # prompts e inputs de prueba controlados
+├── tools/                    # check_services (preflight) · setup_models · make_test_audio
+├── data/                     # prompts, audio de prueba e inputs controlados (versionados)
 ├── analysis/                 # consolidación → tablas Markdown + gráficos
-├── results/                  # CSV/JSONL crudos (ignorados por git)
-└── report/                   # reporte_tecnico.md, pipeline_diagram.md, figures/
+├── results/                  # CSV/JSONL crudos (corrida real incluida)
+└── report/                   # reporte_tecnico.md/.pdf, pipeline_diagram.md, figures/, build_pdf.sh
 ```
 
 ---
 
 ## 3. Ejecución con Docker (recomendado)
 
-Requisitos: **Docker** y **Docker Compose v2**. (Opcional: GPU NVIDIA con
-`nvidia-container-toolkit` — descomenta el bloque `deploy` en
-`docker-compose.yml`.)
+Requisito único: **Docker** y **Docker Compose v2**. El compose **base no exige
+GPU**, así que corre en cualquier máquina limpia (solo CPU). La aceleración por
+GPU es un **override opcional** (ver más abajo).
 
 ```bash
-# 1) Levanta el servidor de LLMs locales
+# 0) Clona el repo y entra a la carpeta
+git clone https://github.com/GabrielFallas/PF-3312-proyecto2.git
+cd PF-3312-proyecto2/benchmarking-ia
+
+# 1) (Opcional) Configura las API keys de la nube. Sin esto, los servicios en la
+#    nube se OMITEN y el banco corre solo con los modelos locales.
+cp .env.example .env        # Windows: copy .env.example .env
+#   edita .env y pega tus llaves de free tier (Gemini, Groq, Deepgram, ...)
+
+# 2) Levanta el servidor de LLMs locales (CPU)
 docker compose up -d ollama
 
-# 2) Descarga los 5 modelos LLM (una sola vez; se persisten en un volumen)
+# 3) Descarga los 5 modelos LLM locales (una sola vez; se persisten en un volumen)
 docker compose run --rm ollama-pull
 
-# 3) Construye la imagen de la app y corre el banco COMPLETO
+# 4) Descarga los modelos locales de STT/TTS (Vosk + voces Piper) al host
+docker compose run --rm benchmark -m tools.setup_models
+
+# 5) Construye la imagen de la app y corre el banco COMPLETO
 docker compose build benchmark
 docker compose run --rm benchmark
 
@@ -101,9 +115,19 @@ docker compose run --rm benchmark analysis/build_report_data.py
 Los resultados (`results/`), gráficos (`report/figures/`) y audios TTS
 (`tts_output/`) quedan en el host gracias a los volúmenes montados.
 
-> **STT/TTS dentro de Docker:** coloca el audio de prueba en
-> `data/audio/muestra_es.wav` (16 kHz mono) antes de correr STT, y los
-> modelos pesados (Vosk, voz Piper) en `models/` según el `.env`.
+### Aceleración por GPU NVIDIA (opcional)
+
+Si el host tiene una GPU NVIDIA y `nvidia-container-toolkit`, añade el override
+de GPU **en cada comando** para que Ollama use la tarjeta:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm benchmark
+```
+
+> **Datos de prueba ya incluidos:** el audio STT (`data/audio/muestra_es.wav`,
+> 16 kHz mono) viene versionado en el repo, así que el benchmark de STT corre sin
+> ninguna clave de API. Los modelos locales (Vosk/Piper) los baja el paso 4.
 
 ---
 
@@ -125,22 +149,26 @@ pip install -r requirements.txt
 cp .env.example .env        # Windows: copy .env.example .env
 #   edita .env si cambias rutas de modelos (Vosk, Piper, whisper.cpp)
 
-# 4) Instalar Ollama y descargar modelos (https://ollama.com)
+# 4) Descargar modelos locales de STT/TTS (Vosk + voces Piper) -> models/
+python -m tools.setup_models
+
+# 5) Instalar Ollama y descargar los LLM locales (https://ollama.com)
 ollama pull llama3.1:8b && ollama pull mistral:7b && ollama pull phi3.5 \
   && ollama pull gemma2:9b && ollama pull qwen2.5:7b
 
-# 5) Ejecutar
+# 6) Ejecutar
 python run_all.py                       # todo
 python -m benchmarks.llm_benchmark      # solo LLM
+python -m benchmarks.stt_benchmark --only-local   # STT local (sin claves)
 python -m analysis.build_report_data    # consolidar
 ```
 
 ### Dependencias de sistema (solo modo local)
 - **ffmpeg** — audio (Whisper/librosa)
 - **espeak-ng** — motor TTS baseline
-- **Vosk**: descarga un modelo de español de <https://alphacephei.com/vosk/models> a `models/` y apúntalo en `.env`.
-- **Piper**: descarga una voz `.onnx` + `.onnx.json` a `models/piper/` y apúntala en `.env`.
-- **whisper.cpp**: compila el binario y define `WHISPER_CPP_BIN`/`WHISPER_CPP_MODEL` en `.env`.
+- **Vosk** y **Piper**: los descarga automáticamente `python -m tools.setup_models`
+  a `models/` (rutas ya configuradas en `.env.example`). No requiere pasos manuales.
+- **whisper.cpp** (opcional): compila el binario y define `WHISPER_CPP_BIN`/`WHISPER_CPP_MODEL` en `.env`.
 
 ---
 
@@ -153,11 +181,12 @@ python -m analysis.build_report_data    # consolidar
 | `data/audio/muestra_es.wav` | audio en español que **debe corresponder** a la transcripción de referencia |
 | `data/tts_text_es.txt` | texto a sintetizar en el benchmark de TTS |
 
-Generar el WAV de prueba a 16 kHz mono (dos opciones):
+El audio de prueba **ya viene incluido** en el repo (`data/audio/muestra_es.wav`,
+16 kHz mono), por lo que no hay que generarlo. Si deseas regenerarlo o usar otro:
 ```bash
-# A) Sintetizar la referencia con ElevenLabs (reproducible, sin ffmpeg):
+# A) Regenerar la referencia con ElevenLabs (requiere ELEVENLABS_API_KEY):
 python -m tools.make_test_audio
-# B) Convertir un audio real propio:
+# B) Convertir un audio real propio (requiere ffmpeg):
 ffmpeg -i tu_audio.mp3 -ar 16000 -ac 1 data/audio/muestra_es.wav
 ```
 
@@ -166,9 +195,6 @@ ffmpeg -i tu_audio.mp3 -ar 16000 -ac 1 data/audio/muestra_es.wav
 > `report/tablas_generadas.md`, ejecutadas sobre un equipo i7-13700KF + **RTX
 > 5070 Ti** (LLM locales en GPU) descrito en el reporte. Para reproducir desde
 > cero, borra `results/` y vuelve a correr los pasos anteriores.
-
-> **GPU automática:** `docker-compose.yml` ya habilita la GPU NVIDIA para Ollama
-> (bloque `deploy`). Si tu equipo no tiene GPU, coméntalo y correrá en CPU.
 
 ---
 

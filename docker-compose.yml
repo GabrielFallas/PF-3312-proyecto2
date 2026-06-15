@@ -5,13 +5,17 @@
 #   - ollama     : servidor de LLMs locales (expone API en :11434)
 #   - benchmark  : la aplicacion Python que ejecuta las pruebas
 #
-#  Uso tipico:
-#     docker compose up -d ollama                 # levanta Ollama
-#     docker compose run --rm ollama-pull         # descarga los modelos
+#  Uso tipico (FUNCIONA EN CUALQUIER EQUIPO, con o sin GPU):
+#     docker compose up -d ollama                 # levanta Ollama (CPU)
+#     docker compose run --rm ollama-pull         # descarga los 5 LLM locales
 #     docker compose run --rm benchmark           # corre el banco completo
 #
-#  Para GPU NVIDIA, descomenta el bloque 'deploy' del servicio ollama
-#  (requiere nvidia-container-toolkit instalado en el host).
+#  Para ACELERAR con GPU NVIDIA (requiere nvidia-container-toolkit en el host),
+#  agrega el override de GPU en cada comando:
+#     docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama
+#
+#  Este compose BASE no exige GPU, de modo que corre en una maquina limpia sin
+#  hardware NVIDIA (solo CPU). El override docker-compose.gpu.yml es opcional.
 # ============================================================
 services:
 
@@ -28,14 +32,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    # --- GPU NVIDIA (requiere nvidia-container-toolkit en el host) ---
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
 
   # Servicio auxiliar de un solo uso para descargar los 5 LLMs del benchmark.
   ollama-pull:

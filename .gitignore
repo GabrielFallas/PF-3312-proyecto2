@@ -29,6 +29,8 @@ data/audio/*.wav
 data/audio/*.mp3
 data/audio/*.flac
 tts_output/
+# EXCEPCION: el audio de prueba de STT si se versiona (reproducibilidad sin claves)
+!data/audio/muestra_es.wav
 
 # Modelos descargados localmente (pesados)
 models/
