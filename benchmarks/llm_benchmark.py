@@ -123,10 +123,16 @@ def run_gemini(svc: dict, system: str, prompt: str, max_tokens: int):
     url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
            f"{svc['model']}:streamGenerateContent?alt=sse")
     headers = {"User-Agent": config.HTTP_USER_AGENT, "x-goog-api-key": config.get_key(svc)}
+    gen_cfg = {"maxOutputTokens": max_tokens, "temperature": 0.0}
+    # Modelos "thinking" (Gemini 2.5 Pro/Flash) razonan antes de responder. Si el
+    # servicio define thinking_budget, se topa para conservar cuota y garantizar
+    # que quede presupuesto para texto visible (necesario para medir el TTFT).
+    if svc.get("thinking_budget") is not None:
+        gen_cfg["thinkingConfig"] = {"thinkingBudget": svc["thinking_budget"]}
     payload = {
         "systemInstruction": {"parts": [{"text": system}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.0},
+        "generationConfig": gen_cfg,
     }
     pieces, tokens = [], 0
     timer.start()

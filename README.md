@@ -24,9 +24,15 @@ está en `.env`**; si no, se omite y el resto continúa.
 
 | Categoría | 🟣 Nube alta gama | 🔵 Nube bajo costo/rápido | 🟢 Local offline |
 |-----------|-------------------|---------------------------|------------------|
-| **LLM** | Gemini 2.5 Pro | Gemini 2.5 Flash · Groq Llama 3.3 70B | Llama 3.1 8B · Mistral 7B · Phi-3.5 · Gemma 2 9B · Qwen 2.5 7B |
+| **LLM** | Gemini 2.5 Pro¹ · gpt-oss-120B (Groq) · Llama 4 Scout (Groq) | Gemini 2.5 Flash · Gemini 2.5 Flash-Lite · Groq Llama 3.3 70B | Llama 3.1 8B · Mistral 7B · Phi-3.5 · Gemma 2 9B · Qwen 2.5 7B |
 | **STT** | Deepgram nova-2 · AssemblyAI | Groq Whisper large-v3 | faster-whisper · openai-whisper · whisper.cpp · Vosk · wav2vec2 |
 | **TTS** | ElevenLabs multilingual v2 | ElevenLabs Flash v2.5 · Deepgram Aura 2 | Piper · Coqui XTTS v2 · Kokoro · eSpeak-NG · Bark |
+
+> ¹ **Gemini 2.5 Pro** se incluye como referencia de gama alta, pero su capa
+> gratuita devuelve **HTTP 429** desde la primera petición (no es usable sin
+> facturación). El punto empírico de "alta gama en la nube" lo aportan
+> **gpt-oss-120B** (120 B, pesos abiertos de OpenAI) y **Llama 4 Scout**, modelos
+> *flagship* servidos sobre la LPU de Groq con *free tier* real. Ver el reporte.
 
 > Se evitan **OpenAI, Anthropic y Azure** por no ofrecer un acceso gratuito
 > práctico. Se usan solo proveedores con **free tier real**.
@@ -197,21 +203,21 @@ modelos vigentes **sin consumir cuota**.
 El reporte se escribe en Markdown (`report/reporte_tecnico.md`) e incorpora las
 tablas/figuras generadas por `analysis/build_report_data.py`.
 
+El PDF final (`report/reporte_tecnico.pdf`) **ya viene generado** en el repo. Para
+regenerarlo usa el script reproducible, que sustituye los emojis/símbolos de las
+tablas por su etiqueta de texto antes de invocar Pandoc:
+
 ```bash
 cd report
-# Opcion A (recomendada si tienes LaTeX: TeX Live / MiKTeX):
-pandoc reporte_tecnico.md -o reporte_tecnico.pdf \
-  --pdf-engine=xelatex --toc --number-sections \
-  -V geometry:margin=2.5cm -V lang=es -V mainfont="Calibri"
-
-# Opcion B (sin LaTeX): generar HTML autocontenido y exportarlo a PDF
-# desde el navegador (Ctrl+P -> Guardar como PDF). Ya se incluye generado:
-pandoc reporte_tecnico.md -o reporte_tecnico.html -s --toc \
-  --number-sections --embed-resources
+./build_pdf.sh                 # usa tectonic por defecto
+PDF_ENGINE=xelatex ./build_pdf.sh   # si tienes TeX Live / MiKTeX instalado
 ```
 
-> Se incluye `report/reporte_tecnico.html` ya renderizado (con las figuras
-> embebidas) listo para revisar o exportar a PDF sin instalar nada.
+> **Sin LaTeX en el sistema:** descarga el binario portable de
+> [tectonic](https://github.com/tectonic-typesetting/tectonic/releases)
+> (un único ejecutable, no requiere instalación) y colócalo en el `PATH` o en
+> `.tools/`. El script lo detecta automáticamente. Tectonic descarga los paquetes
+> LaTeX necesarios la primera vez.
 
 Los diagramas Mermaid (`pipeline_diagram.md`) se renderizan en GitHub o se
 exportan a PNG con `mermaid-cli` (`mmdc`) para incrustarlos en el PDF.

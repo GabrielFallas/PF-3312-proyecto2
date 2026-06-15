@@ -12,23 +12,23 @@ timestamp,category,service,test_case,run_idx,warmup,total_s,ttft_s,metric_name,m
 2026-06-14T22:03:00+00:00,LLM,Gemini-2.5-Flash,seguimiento_instrucciones,5,False,1.787775,1.780144,tokens_per_s,4.47,True,,tier=nube-alta-gama; tokens=8
 2026-06-14T22:03:09+00:00,LLM,Gemini-2.5-Flash,seguimiento_instrucciones,6,False,2.319957,,tokens_per_s,0.0,True,,tier=nube-alta-gama; tokens=0
 2026-06-14T22:03:18+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,1,True,1.564265,1.41767,tokens_per_s,23.01,True,,tier=nube-alta-gama; tokens=36
-2026-06-14T22:03:26+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,2,False,0.707042,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
+2026-06-14T22:03:26+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,2,False,0.707042,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
 2026-06-14T22:03:34+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,3,False,1.503547,1.398695,tokens_per_s,28.6,True,,tier=nube-alta-gama; tokens=43
 2026-06-14T22:03:43+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,4,False,1.730504,1.641823,tokens_per_s,24.85,True,,tier=nube-alta-gama; tokens=43
 2026-06-14T22:03:52+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,5,False,1.676183,1.575574,tokens_per_s,21.48,True,,tier=nube-alta-gama; tokens=36
 2026-06-14T22:04:00+00:00,LLM,Gemini-2.5-Flash,salida_estructurada_json,6,False,1.570918,1.487431,tokens_per_s,27.37,True,,tier=nube-alta-gama; tokens=43
 2026-06-14T22:04:09+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,1,True,2.054959,2.042435,tokens_per_s,3.89,True,,tier=nube-alta-gama; tokens=8
 2026-06-14T22:04:18+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,2,False,2.148011,2.137296,tokens_per_s,3.72,True,,tier=nube-alta-gama; tokens=8
-2026-06-14T22:04:26+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,3,False,0.794604,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:04:34+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,4,False,0.902162,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:04:42+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,5,False,0.833153,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
+2026-06-14T22:04:26+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,3,False,0.794604,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:04:34+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,4,False,0.902162,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:04:42+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,5,False,0.833153,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
 2026-06-14T22:04:51+00:00,LLM,Gemini-2.5-Flash,conocimiento_dominio,6,False,1.883484,1.877626,tokens_per_s,4.25,True,,tier=nube-alta-gama; tokens=8
-2026-06-14T22:04:59+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,1,True,0.67232,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:05:06+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,2,False,0.6165,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:05:14+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,3,False,0.507695,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:05:21+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,4,False,0.581119,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:05:29+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,5,False,0.652038,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:05:36+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,6,False,0.469403,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=
+2026-06-14T22:04:59+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,1,True,0.67232,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:05:06+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,2,False,0.6165,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:05:14+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,3,False,0.507695,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:05:21+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,4,False,0.581119,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:05:29+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,5,False,0.652038,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:05:36+00:00,LLM,Gemini-2.5-Flash,robustez_idioma,6,False,0.469403,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
 2026-06-14T22:05:45+00:00,LLM,Gemini-2.5-Flash-Lite,razonamiento_logico,1,True,1.164501,0.708441,tokens_per_s,171.75,True,,tier=nube-bajo-costo; tokens=200
 2026-06-14T22:05:53+00:00,LLM,Gemini-2.5-Flash-Lite,razonamiento_logico,2,False,1.099544,0.639135,tokens_per_s,181.89,True,,tier=nube-bajo-costo; tokens=200
 2026-06-14T22:06:01+00:00,LLM,Gemini-2.5-Flash-Lite,razonamiento_logico,3,False,1.076253,0.621581,tokens_per_s,185.83,True,,tier=nube-bajo-costo; tokens=200
@@ -53,12 +53,12 @@ timestamp,category,service,test_case,run_idx,warmup,total_s,ttft_s,metric_name,m
 2026-06-14T22:08:31+00:00,LLM,Gemini-2.5-Flash-Lite,conocimiento_dominio,4,False,1.06775,0.614363,tokens_per_s,114.26,True,,tier=nube-bajo-costo; tokens=122
 2026-06-14T22:08:39+00:00,LLM,Gemini-2.5-Flash-Lite,conocimiento_dominio,5,False,1.038752,0.589788,tokens_per_s,117.45,True,,tier=nube-bajo-costo; tokens=122
 2026-06-14T22:08:47+00:00,LLM,Gemini-2.5-Flash-Lite,conocimiento_dominio,6,False,1.043296,0.672909,tokens_per_s,116.94,True,,tier=nube-bajo-costo; tokens=122
-2026-06-14T22:08:55+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,1,True,0.489416,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:09:02+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,2,False,0.659089,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:09:10+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,3,False,0.557582,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:09:18+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,4,False,0.56562,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:09:25+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,5,False,0.578961,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
-2026-06-14T22:09:33+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,6,False,0.45777,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=
+2026-06-14T22:08:55+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,1,True,0.489416,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:09:02+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,2,False,0.659089,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:09:10+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,3,False,0.557582,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:09:18+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,4,False,0.56562,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:09:25+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,5,False,0.578961,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
+2026-06-14T22:09:33+00:00,LLM,Gemini-2.5-Flash-Lite,robustez_idioma,6,False,0.45777,,tokens_per_s,,False,429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:streamGenerateContent?alt=sse&***REDACTED*** tokens=,
 2026-06-14T22:09:40+00:00,LLM,Groq-Llama-3.3-70B,razonamiento_logico,1,True,0.85412,0.441719,tokens_per_s,234.16,True,,tier=nube-bajo-costo; tokens=200
 2026-06-14T22:09:48+00:00,LLM,Groq-Llama-3.3-70B,razonamiento_logico,2,False,0.863573,0.413578,tokens_per_s,231.6,True,,tier=nube-bajo-costo; tokens=200
 2026-06-14T22:09:56+00:00,LLM,Groq-Llama-3.3-70B,razonamiento_logico,3,False,0.905132,0.429214,tokens_per_s,220.96,True,,tier=nube-bajo-costo; tokens=200
@@ -239,3 +239,63 @@ timestamp,category,service,test_case,run_idx,warmup,total_s,ttft_s,metric_name,m
 2026-06-14T22:19:09+00:00,LLM,Qwen-2.5-7B-local,robustez_idioma,4,False,0.358841,0.079666,tokens_per_s,155.11,True,,tier=local; tokens=39
 2026-06-14T22:19:09+00:00,LLM,Qwen-2.5-7B-local,robustez_idioma,5,False,0.358447,0.079954,tokens_per_s,155.06,True,,tier=local; tokens=39
 2026-06-14T22:19:10+00:00,LLM,Qwen-2.5-7B-local,robustez_idioma,6,False,0.375052,0.097176,tokens_per_s,155.31,True,,tier=local; tokens=39
+2026-06-15T02:29:55+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,1,True,1.140237,0.983278,tokens_per_s,224.51,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:29:58+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,2,False,1.234777,1.075397,tokens_per_s,207.32,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:30:00+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,3,False,1.047867,0.708307,tokens_per_s,244.31,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:30:03+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,4,False,0.889538,0.573209,tokens_per_s,287.79,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:30:05+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,5,False,1.035024,0.719842,tokens_per_s,247.34,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:30:08+00:00,LLM,Groq-GPT-OSS-120B,razonamiento_logico,6,False,1.394492,0.821561,tokens_per_s,183.58,True,,tier=nube-alta-gama; tokens=256
+2026-06-15T02:30:11+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,1,True,1.021874,1.013876,tokens_per_s,143.85,True,,tier=nube-alta-gama; tokens=147
+2026-06-15T02:30:13+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,2,False,1.050107,0.975668,tokens_per_s,139.99,True,,tier=nube-alta-gama; tokens=147
+2026-06-15T02:30:16+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,3,False,1.027823,,tokens_per_s,194.59,True,,tier=nube-alta-gama; tokens=200
+2026-06-15T02:30:18+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,4,False,0.965326,,tokens_per_s,207.18,True,,tier=nube-alta-gama; tokens=200
+2026-06-15T02:30:21+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,5,False,0.860577,,tokens_per_s,232.4,True,,tier=nube-alta-gama; tokens=200
+2026-06-15T02:30:23+00:00,LLM,Groq-GPT-OSS-120B,seguimiento_instrucciones,6,False,0.96026,,tokens_per_s,208.28,True,,tier=nube-alta-gama; tokens=200
+2026-06-15T02:30:26+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,1,True,1.016183,,tokens_per_s,147.61,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:28+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,2,False,0.661918,,tokens_per_s,226.61,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:30+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,3,False,1.189281,,tokens_per_s,126.13,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:33+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,4,False,0.710389,,tokens_per_s,211.15,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:35+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,5,False,0.728112,,tokens_per_s,206.01,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:37+00:00,LLM,Groq-GPT-OSS-120B,salida_estructurada_json,6,False,1.059926,,tokens_per_s,141.52,True,,tier=nube-alta-gama; tokens=150
+2026-06-15T02:30:40+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,1,True,0.985491,0.632059,tokens_per_s,217.15,True,,tier=nube-alta-gama; tokens=214
+2026-06-15T02:30:42+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,2,False,0.844575,0.480252,tokens_per_s,252.2,True,,tier=nube-alta-gama; tokens=213
+2026-06-15T02:30:45+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,3,False,0.856299,0.496268,tokens_per_s,247.58,True,,tier=nube-alta-gama; tokens=212
+2026-06-15T02:30:47+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,4,False,0.999703,0.634711,tokens_per_s,220.07,True,,tier=nube-alta-gama; tokens=220
+2026-06-15T02:30:50+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,5,False,0.964847,0.59417,tokens_per_s,219.72,True,,tier=nube-alta-gama; tokens=212
+2026-06-15T02:30:52+00:00,LLM,Groq-GPT-OSS-120B,conocimiento_dominio,6,False,0.834601,0.467702,tokens_per_s,260.0,True,,tier=nube-alta-gama; tokens=217
+2026-06-15T02:30:54+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,1,True,0.592169,0.497667,tokens_per_s,160.43,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:30:56+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,2,False,0.688085,0.594417,tokens_per_s,138.06,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:30:59+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,3,False,0.81429,0.557574,tokens_per_s,116.67,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:31:01+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,4,False,0.961737,0.587709,tokens_per_s,98.78,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:31:03+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,5,False,0.804682,0.711727,tokens_per_s,118.06,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:31:05+00:00,LLM,Groq-GPT-OSS-120B,robustez_idioma,6,False,0.612807,0.516338,tokens_per_s,155.02,True,,tier=nube-alta-gama; tokens=95
+2026-06-15T02:31:08+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,1,True,0.854416,0.431494,tokens_per_s,218.86,True,,tier=nube-alta-gama; tokens=187
+2026-06-15T02:31:10+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,2,False,0.944785,0.581415,tokens_per_s,172.53,True,,tier=nube-alta-gama; tokens=163
+2026-06-15T02:31:13+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,3,False,1.10174,0.629547,tokens_per_s,187.88,True,,tier=nube-alta-gama; tokens=207
+2026-06-15T02:31:15+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,4,False,1.109869,0.637343,tokens_per_s,189.21,True,,tier=nube-alta-gama; tokens=210
+2026-06-15T02:31:18+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,5,False,1.115402,0.63268,tokens_per_s,164.96,True,,tier=nube-alta-gama; tokens=184
+2026-06-15T02:31:20+00:00,LLM,Groq-Llama-4-Scout,razonamiento_logico,6,False,0.911073,0.422183,tokens_per_s,227.2,True,,tier=nube-alta-gama; tokens=207
+2026-06-15T02:31:23+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,1,True,0.862873,0.74567,tokens_per_s,60.26,True,,tier=nube-alta-gama; tokens=52
+2026-06-15T02:31:25+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,2,False,0.931062,0.810616,tokens_per_s,50.48,True,,tier=nube-alta-gama; tokens=47
+2026-06-15T02:31:27+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,3,False,0.482497,0.371481,tokens_per_s,97.41,True,,tier=nube-alta-gama; tokens=47
+2026-06-15T02:31:30+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,4,False,1.542461,1.386564,tokens_per_s,30.47,True,,tier=nube-alta-gama; tokens=47
+2026-06-15T02:31:32+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,5,False,0.659195,0.532265,tokens_per_s,71.3,True,,tier=nube-alta-gama; tokens=47
+2026-06-15T02:31:34+00:00,LLM,Groq-Llama-4-Scout,seguimiento_instrucciones,6,False,0.456392,0.344644,tokens_per_s,109.55,True,,tier=nube-alta-gama; tokens=50
+2026-06-15T02:31:36+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,1,True,0.593923,0.519233,tokens_per_s,57.25,True,,tier=nube-alta-gama; tokens=34
+2026-06-15T02:31:39+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,2,False,0.845663,0.767071,tokens_per_s,41.39,True,,tier=nube-alta-gama; tokens=35
+2026-06-15T02:31:41+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,3,False,0.893983,0.813732,tokens_per_s,39.15,True,,tier=nube-alta-gama; tokens=35
+2026-06-15T02:31:43+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,4,False,0.487281,0.412922,tokens_per_s,67.72,True,,tier=nube-alta-gama; tokens=33
+2026-06-15T02:31:46+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,5,False,0.89218,0.812044,tokens_per_s,39.23,True,,tier=nube-alta-gama; tokens=35
+2026-06-15T02:31:48+00:00,LLM,Groq-Llama-4-Scout,salida_estructurada_json,6,False,0.50672,0.433004,tokens_per_s,63.15,True,,tier=nube-alta-gama; tokens=32
+2026-06-15T02:31:50+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,1,True,0.698785,0.368427,tokens_per_s,208.93,True,,tier=nube-alta-gama; tokens=146
+2026-06-15T02:31:52+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,2,False,0.709447,0.394784,tokens_per_s,167.74,True,,tier=nube-alta-gama; tokens=119
+2026-06-15T02:31:54+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,3,False,0.646805,0.351109,tokens_per_s,204.08,True,,tier=nube-alta-gama; tokens=132
+2026-06-15T02:31:57+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,4,False,1.067742,0.809938,tokens_per_s,108.64,True,,tier=nube-alta-gama; tokens=116
+2026-06-15T02:31:59+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,5,False,0.902488,0.60513,tokens_per_s,146.26,True,,tier=nube-alta-gama; tokens=132
+2026-06-15T02:32:02+00:00,LLM,Groq-Llama-4-Scout,conocimiento_dominio,6,False,1.200794,0.920338,tokens_per_s,103.27,True,,tier=nube-alta-gama; tokens=124
+2026-06-15T02:32:04+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,1,True,0.801877,0.603844,tokens_per_s,106.0,True,,tier=nube-alta-gama; tokens=85
+2026-06-15T02:32:06+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,2,False,0.686516,0.548201,tokens_per_s,88.85,True,,tier=nube-alta-gama; tokens=61
+2026-06-15T02:32:09+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,3,False,0.781539,0.576952,tokens_per_s,116.44,True,,tier=nube-alta-gama; tokens=91
+2026-06-15T02:32:11+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,4,False,0.723984,0.587887,tokens_per_s,84.26,True,,tier=nube-alta-gama; tokens=61
+2026-06-15T02:32:13+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,5,False,0.846955,0.656613,tokens_per_s,72.02,True,,tier=nube-alta-gama; tokens=61
+2026-06-15T02:32:15+00:00,LLM,Groq-Llama-4-Scout,robustez_idioma,6,False,0.751742,0.516215,tokens_per_s,138.35,True,,tier=nube-alta-gama; tokens=104

@@ -79,8 +79,32 @@ HTTP_USER_AGENT = os.getenv(
 #  CATALOGO DE LLMs  (balance: nube-alta-gama / nube-bajo-costo / local)
 # ==========================================================================
 LLM_SERVICES = {
+    # --- Nube, ALTA GAMA de pago (Gemini 2.5 Pro: modelo flagship de razonamiento
+    #     de Google). Free tier muy restrictivo, por lo que se ejecuta con tope de
+    #     tokens y "thinking_budget" minimo para no agotar la cuota (ver
+    #     CLOUD_MAX_OUTPUT_TOKENS y CLOUD_N_RUNS). Se incluye para tener el punto
+    #     de referencia de gama alta que exige el enunciado. ---
+    "Gemini-2.5-Pro": {
+        "kind": "cloud", "tier": "nube-alta-gama", "provider": "gemini",
+        "model": "gemini-2.5-pro", "key_env": "GEMINI_API_KEY",
+        "thinking_budget": 128,  # minimo de razonamiento -> conserva cuota
+    },
+    # --- Nube, ALTA GAMA accesible (Groq sirve modelos flagship open-weight en su
+    #     LPU). gpt-oss-120B (OpenAI, 120B) y Llama 4 Scout son modelos de gama alta
+    #     con free tier real: dan el punto de referencia empirico de "alta gama en la
+    #     nube" que Gemini 2.5 Pro no permite medir gratis (devuelve HTTP 429). ---
+    "Groq-GPT-OSS-120B": {
+        "kind": "cloud", "tier": "nube-alta-gama", "provider": "openai_compat",
+        "base_url": "https://api.groq.com/openai/v1",
+        "model": "openai/gpt-oss-120b", "key_env": "GROQ_API_KEY",
+    },
+    "Groq-Llama-4-Scout": {
+        "kind": "cloud", "tier": "nube-alta-gama", "provider": "openai_compat",
+        "base_url": "https://api.groq.com/openai/v1",
+        "model": "meta-llama/llama-4-scout-17b-16e-instruct", "key_env": "GROQ_API_KEY",
+    },
     # --- Nube, alta gama (Gemini 2.5 Flash: modelo moderno de la familia flagship,
-    #     pero con free tier generoso. Se evita 2.5 Pro para no agotar la cuota). ---
+    #     con free tier mas generoso). ---
     "Gemini-2.5-Flash": {
         "kind": "cloud", "tier": "nube-alta-gama", "provider": "gemini",
         "model": "gemini-2.5-flash", "key_env": "GEMINI_API_KEY",

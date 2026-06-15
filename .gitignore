@@ -16,7 +16,13 @@ results/*.csv
 results/*.json
 results/raw/
 report/figures/*.png
-report/*.pdf
+report/.reporte_pdf.md          # temporal del build de PDF
+
+# Binarios de herramientas portables (p.ej. tectonic para generar el PDF)
+.tools/
+
+# NOTA: el PDF final del reporte (report/reporte_tecnico.pdf) SI se versiona
+# como entregable; los datos (results/*.csv) y figuras se anaden con `git add -f`.
 
 # Audios generados / de prueba (pesados)
 data/audio/*.wav
