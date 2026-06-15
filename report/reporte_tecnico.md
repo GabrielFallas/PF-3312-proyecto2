@@ -1,7 +1,7 @@
 ---
 title: "Benchmarking de Servicios de IA para Agentes Virtuales Inteligentes"
 subtitle: "Proyecto 2 — Laboratorio PF-3312, Universidad de Costa Rica"
-author: "Gabriel Fallas Mora"
+author: "Gabriel Fallas López"
 date: "I Ciclo 2026"
 lang: es
 toc: true
@@ -232,6 +232,45 @@ eSpeak-NG, Bark) reproducibles con un comando.
   contra fugas de credenciales. El script `analysis/build_report_data.py`
   consolida promedios y genera las tablas y figuras de este reporte.
 
+## Fichas técnicas y costos de referencia a escala
+
+El uso experimental de este proyecto es de **costo cero** (capas gratuitas y
+modelos locales). No obstante, la decisión arquitectónica exige proyectar el
+**costo a escala** una vez superada la capa gratuita. La siguiente tabla resume
+el precio de lista de cada servicio en la nube y el requisito de infraestructura
+de cada opción local. Cifras en USD, **junio 2026**, capa gratuita aparte y
+sujetas a cambios del proveedor (fuentes [11]–[14]).
+
+| Servicio | Tipo | Unidad de costo | Precio de lista (jun. 2026) |
+|----------|------|-----------------|------------------------------|
+| **LLM — nube** | | por 1M tokens (entrada / salida) | |
+| Gemini 2.5 Pro | alta gama | $/1M tok | $1.25 / $10.00 |
+| Gemini 2.5 Flash | alta gama | $/1M tok | $0.30 / $2.50 |
+| Gemini 2.5 Flash-Lite | bajo costo | $/1M tok | $0.10 / $0.40 |
+| gpt-oss-120B (Groq) | alta gama | $/1M tok | $0.15 / $0.60 |
+| Llama 4 Scout (Groq) | alta gama | $/1M tok | ≈ $0.11 / $0.34 |
+| Llama 3.3 70B (Groq) | bajo costo | $/1M tok | $0.59 / $0.79 |
+| **LLM — local** | offline | infraestructura | **$0** · 2–7 GB VRAM · GPU de consumo |
+| **STT — nube** | | por minuto / hora de audio | |
+| Deepgram nova-2 | alta gama | $/min | ≈ $0.0043/min ($200 crédito free) |
+| AssemblyAI | alta gama | $/hora | ≈ $0.15/h (≈ $0.0025/min) |
+| Groq Whisper large-v3 | bajo costo | $/hora | ≈ $0.04–0.11/h |
+| **STT — local** | offline | infraestructura | **$0** · CPU (int8); ~50 MB–1 GB RAM |
+| **TTS — nube** | | por 1k caracteres | |
+| ElevenLabs multilingual v2 | alta gama | $/1k car. | ≈ $0.10/1k (10k car./mes free) |
+| ElevenLabs Flash v2.5 | bajo costo | $/1k car. | ≈ $0.05/1k |
+| Deepgram Aura 2 | bajo costo | $/1k car. | ≈ $0.030/1k |
+| **TTS — local (Piper)** | offline | infraestructura | **$0** · CPU eficiente (ONNX) |
+
+**Lectura de escalabilidad.** En LLM, las opciones de bajo costo (Flash-Lite a
+$0.40/1M salida; Llama 4 Scout ≈ $0.34) son **20–25× más baratas** que el
+*flagship* propietario (Gemini 2.5 Pro, $10/1M salida); la opción local es
+gratuita pero traslada el costo a la inversión en GPU y al consumo energético.
+En STT, AssemblyAI y Deepgram cobran fracciones de centavo por minuto, pero a
+gran volumen el motor local (faster-whisper en CPU) elimina ese costo marginal.
+En TTS, ElevenLabs Flash duplica la eficiencia de costo frente a multilingual v2,
+y Piper local lo lleva a cero. Estas cifras fundamentan las recomendaciones (§6).
+
 \newpage
 
 # Análisis Comparativo por Categoría
@@ -263,6 +302,8 @@ medidos en el entorno descrito (LLM locales en GPU RTX 5070 Ti; nube vía free t
 | **Qwen 2.5 7B** 🟢 local | 0.09 / 0.62 | 155 | $0 · ~5 GB | **Total** | Íd. (buen soporte de *tools*) | Ollama |
 
 ![LLM: TTFT vs velocidad de generación](figures/llm_ttft_vs_tps.png)
+
+![LLM: latencia total vs. costo por 1M tokens de salida (verde = local $0, azul = nube)](figures/llm_latencia_vs_costo.png)
 
 ### Hallazgos
 
@@ -357,13 +398,75 @@ corridas. Motores locales en CPU._
   más natural, Piper es muy inteligible con prosodia algo más plana. Una
   evaluación MOS formal con panel de oyentes [6, 7] queda como trabajo futuro.
 
+## Síntesis transversal de las dimensiones 3–6
+
+Más allá de la latencia y la calidad (dimensiones 1–2, analizadas arriba), las
+cuatro dimensiones restantes determinan la viabilidad real de cada servicio.
+
+### Dimensión 3 — Costo y escalabilidad
+La tabla de costos (§3, "Fichas técnicas") cuantifica el compromiso: a volumen
+bajo, la nube es gratis (free tier) y sin inversión; a volumen alto, el costo
+marginal por token/minuto/carácter crece de forma lineal, mientras que el costo
+local es **fijo** (la GPU/CPU ya adquirida) y marginalmente nulo. El punto de
+equilibrio depende del tráfico esperado del agente: para un asistente
+institucional de uso intensivo y continuo, la solución local amortiza el
+hardware rápidamente; para picos esporádicos, la nube evita inmovilizar capital.
+
+### Dimensión 4 — Privacidad y gobernanza
+Existe una frontera nítida entre las opciones **local** y **nube**:
+
+- **Local (Ollama, faster-whisper, Vosk, Piper):** los datos **nunca abandonan
+  la máquina**. Aislamiento absoluto, apto para información sensible y para
+  cumplir normativas de soberanía de datos sin cláusulas contractuales.
+- **Nube:** los datos transitan a un tercero. Las políticas difieren de forma
+  relevante: el *free tier* de **Google AI Studio** (Gemini) advierte que puede
+  **usar las entradas para mejorar sus modelos**, mientras que la vía de pago
+  (Vertex AI) ofrece no-entrenamiento contractual; **Groq, Deepgram, AssemblyAI y
+  ElevenLabs** declaran no entrenar con los datos de la API en sus planes de pago,
+  pero el tratamiento en capas gratuitas puede variar. Para un agente que maneje
+  datos personales, esto **descarta el free tier** de proveedores que entrenan
+  con las entradas y favorece la vía local o un plan de pago con garantía de
+  aislamiento. Es la dimensión donde local y nube se ubican en extremos opuestos.
+
+### Dimensión 5 — Customización y flexibilidad
+- **LLM:** todos permiten inyectar *System Prompts* sofisticados (lo aprovechamos
+  con la persona "Aurora"). Los locales añaden **fine-tuning** y cuantización
+  GGUF propios; en la nube, Gemini y los modelos OpenAI-compatibles exponen
+  *tools*/*function calling* y salida JSON forzada (Qwen 2.5 destacó localmente en
+  soporte de herramientas).
+- **STT:** Deepgram y AssemblyAI ofrecen *keywords*/*word boost* y diarización;
+  Vosk admite gramáticas/vocabulario restringido; faster-whisper acepta
+  `initial_prompt` para sesgar el dominio léxico.
+- **TTS:** ElevenLabs lidera con **clonación de voz** y control de estilo —clave
+  para dar identidad sonora al agente—; Coqui XTTS v2 ofrece clonación local; Piper
+  se limita a voces preentrenadas. La identidad de voz es, por tanto, un factor que
+  puede inclinar la decisión hacia ElevenLabs (nube) o XTTS (local con GPU).
+
+### Dimensión 6 — Facilidad de integración
+Todos los servicios exponen **API REST**; los de baja latencia añaden **WebSocket**
+(Deepgram, ElevenLabs) o **SSE** en *streaming* (Gemini, Groq, Ollama), idóneos
+para el *pipeline* en tiempo real (§5). Para el cliente **Unity (C#)**, los
+proveedores con SDK o REST documentado (Deepgram, ElevenLabs, Gemini) se integran
+directamente; los locales se consumen vía el orquestador en Python expuesto por
+HTTP, evitando dependencias nativas en C#. La madurez de documentación fue mayor
+en los proveedores comerciales consolidados; los motores locales requieren más
+trabajo de integración inicial, compensado por su independencia operativa.
+
 \newpage
 
 # Arquitectura y Pipeline de Comunicación
 
 El diseño completo del flujo de datos —diagrama de flujo y diagrama de secuencia
-UML en notación Mermaid, más la descripción conceptual paso a paso— se documenta
-en `report/pipeline_diagram.md` y se resume a continuación.
+UML, más la descripción conceptual paso a paso— se documenta en
+`report/pipeline_diagram.md` (fuente Mermaid) y se reproduce a continuación.
+
+### Diagrama de flujo de datos (alto nivel)
+
+![Flujo de datos del pipeline: Unity → STT → LLM → TTS → Unity](figures/pipeline_flujo.png)
+
+### Diagrama de secuencia UML (detalle temporal)
+
+![Secuencia UML del pipeline con streaming y síntesis incremental](figures/pipeline_secuencia.png)
 
 El *pipeline* integra las tres categorías evaluadas: **Unity (captura de audio)
 → STT → LLM → TTS → Unity (reproducción)**, orquestado por un servidor local.
@@ -483,6 +586,20 @@ LLM y TTS Pipelines* (umbrales de latencia conversacional 300–700 ms).
 
 [10] Hugging Face (2026). *Best Open-Source / Open-Weight LLM Models to Run
 Locally*. <https://huggingface.co/blog/daya-shankar/open-source-llm-models-to-run-locally>
+
+[11] Google (2026). *Gemini API — Pricing* (2.5 Pro $1.25/$10, Flash $0.30/$2.50,
+Flash-Lite $0.10/$0.40 por 1M tokens). <https://ai.google.dev/gemini-api/docs/pricing>
+
+[12] Groq (2026). *Groq API Pricing* (gpt-oss-120B $0.15/$0.60; Llama 4 Scout;
+Llama 3.3 70B $0.59/$0.79 por 1M tokens; Whisper large-v3 por hora).
+<https://groq.com/pricing>
+
+[13] Deepgram (2026). *Pricing* (nova-2 STT por minuto; Aura 2 TTS por carácter)
+y AssemblyAI *Pricing* (por hora). <https://deepgram.com/pricing> ·
+<https://www.assemblyai.com/pricing>
+
+[14] ElevenLabs (2026). *Pricing* (multilingual v2 ≈ $0.10/1k car.; Flash v2.5 ≈
+$0.05/1k car.). <https://elevenlabs.io/pricing>
 
 \newpage
 
